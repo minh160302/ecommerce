@@ -25,7 +25,7 @@ CREATE TABLE if not exists inventories
 
 CREATE TABLE if not exists products
 (
-    id       BIGSERIAL PRIMARY KEY references inventories (id),
+    id       BIGSERIAL PRIMARY KEY references inventories (id) ON DELETE CASCADE,
     name     VARCHAR(255) NOT NULL,
     in_stock INT,
     price    NUMERIC(10, 2)
@@ -37,26 +37,25 @@ CREATE TABLE if not exists sessions
 (
     id         BIGSERIAL PRIMARY KEY,
     status     VARCHAR(255) NOT NULL, -- IN_PROGRESS/SUBMITTED
-    created_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP    NOT NULL,
     updated_at TIMESTAMP,
-    user_id    BIGINT       NOT NULL references users (id)
+    user_id    BIGINT       NOT NULL references users (id) ON DELETE CASCADE
 );
 
 
 CREATE TABLE if not exists orders
 (
-    id         BIGSERIAL PRIMARY KEY references sessions (id),
-    status     VARCHAR(255) NOT NULL, -- PROCESSING/IN_PROGRESS/DELIVERED
-    created_at TIMESTAMP NOT NULL ,
-    history    VARCHAR(255) NOT NULL, -- update history
-    user_id    BIGINT       NOT NULL references users (id)
+    id         BIGSERIAL PRIMARY KEY references sessions (id) ON DELETE CASCADE,
+    status     VARCHAR(255) NOT NULL, -- NOT SUBMITTED/PROCESSING/IN_PROGRESS/DELIVERED
+    created_at TIMESTAMP    NOT NULL,
+    history    VARCHAR(255)           -- update history
 );
 
 /**
 Relationships:
   - user - session:             1 to many
   - session - product:          many to many
-  - user - order:               1 to many
+// user - order:               1 to many
   - order - session:            1 to 1
   - product - inventory:        1 to 1
 
@@ -77,4 +76,3 @@ CREATE TABLE if not exists sessions_products
 
 
 -- INDEXING
-create unique index idx_users_id ON users using hash(id);

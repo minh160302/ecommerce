@@ -37,4 +37,8 @@ public class Session {
 
   @OneToMany(mappedBy = "session")
   Set<SessionProduct> sessionProducts;
+
+  @OneToOne(mappedBy = "session", cascade = CascadeType.ALL)
+  @PrimaryKeyJoinColumn
+  private Order order;
 }

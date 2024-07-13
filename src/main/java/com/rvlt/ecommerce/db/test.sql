@@ -34,3 +34,6 @@ from users;
 
 
 -- orders
+insert into orders(id, status, created_at, history)
+select id, 'NOT_SUBMITTED', current_timestamp, NULL
+from sessions;
