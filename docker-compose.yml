@@ -1,0 +1,51 @@
+version: '3.5'
+
+services:
+  postgres:
+    container_name: rvlt_postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345678}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    command: -p 5432
+    restart: unless-stopped
+
+#  pgadmin:
+#    container_name: rvlt_pgadmin_container
+#    image: dpage/pgadmin4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-minh160302@gmail.com}
+#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-16032002}
+#      PGADMIN_CONFIG_SERVER_MODE: 'False'
+#    volumes:
+#      - pgadmin:/var/lib/pgadmin
+#    ports:
+#      - "${PGADMIN_PORT:-5051}:80"
+#    networks:
+#      - postgres
+#    restart: unless-stopped
+
+#  cache:
+#    image: "redis"
+#    ports:
+#      - "6379:6379"
+#    environment:
+#      - ALLOW_EMPTY_PASSWORD=yes
+#      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
