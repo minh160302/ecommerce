@@ -11,9 +11,11 @@ import com.rvlt.ecommerce.model.User;
 import com.rvlt.ecommerce.repository.OrderRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
 import com.rvlt.ecommerce.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +70,9 @@ public class UserServiceImpl implements UserService {
     return rs;
   }
 
+
   @Override
+  @Transactional
   public ResponseMessage<Void> userOnboarding(RequestMessage<UserOnboardingDto> rq) {
     UserOnboardingDto input = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
@@ -101,8 +105,11 @@ public class UserServiceImpl implements UserService {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
     return rs;
   }
+
 }
