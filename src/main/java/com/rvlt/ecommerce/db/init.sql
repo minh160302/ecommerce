@@ -3,6 +3,7 @@ CREATE TABLE if not exists users
     id         BIGSERIAL PRIMARY KEY,
     firstName  VARCHAR(255) NOT NULL,
     lastName   VARCHAR(255) NOT NULL,
+    email      VARCHAR(255) NOT NULL UNIQUE,
     dob        VARCHAR(255),
     created_at TIMESTAMP
 );
@@ -36,7 +37,7 @@ CREATE TABLE if not exists products
 CREATE TABLE if not exists sessions
 (
     id         BIGSERIAL PRIMARY KEY,
-    status     VARCHAR(255) NOT NULL, -- IN_PROGRESS/SUBMITTED
+    status     VARCHAR(255) NOT NULL, -- ACTIVE/INACTIVE
     created_at TIMESTAMP    NOT NULL,
     updated_at TIMESTAMP,
     user_id    BIGINT       NOT NULL references users (id) ON DELETE CASCADE

@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -31,8 +32,9 @@ public class Order {
   private String history;
 
   // whoever owns the foreign key column gets the @JoinColumn annotation.
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @MapsId
   @JoinColumn(name = "id")
+  @JsonIgnore
   private Session session;
 }

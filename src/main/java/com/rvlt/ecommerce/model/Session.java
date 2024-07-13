@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -31,14 +32,16 @@ public class Session {
   @Temporal(TemporalType.TIMESTAMP)
   private Date updatedAt;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="user_id", nullable=false)
   private User user;
 
-  @OneToMany(mappedBy = "session")
+  @JsonIgnore
+  @OneToMany(mappedBy = "session", fetch = FetchType.LAZY)
   Set<SessionProduct> sessionProducts;
 
-  @OneToOne(mappedBy = "session", cascade = CascadeType.ALL)
+  @JsonIgnore
+  @OneToOne(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @PrimaryKeyJoinColumn
   private Order order;
 }

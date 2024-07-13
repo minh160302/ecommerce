@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -39,7 +40,8 @@ public class Inventory {
   @Column(name = "balance")
   private int balance;
 
-  @OneToOne(mappedBy = "inventory", cascade = CascadeType.ALL)
+  @OneToOne(mappedBy = "inventory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @PrimaryKeyJoinColumn
+  @JsonIgnore
   private Product product;
 }

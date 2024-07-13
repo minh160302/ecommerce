@@ -1,10 +1,14 @@
 package com.rvlt.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.LazyGroup;
 
 import java.util.Date;
 import java.util.Set;
@@ -29,6 +33,11 @@ public class User {
   private String lastName;
 
   @NotNull
+  @Email
+  @Column(name = "email", unique = true)
+  private String email;
+
+  @NotNull
   @Column(name = "dob")
   private String dob;
 
@@ -36,6 +45,7 @@ public class User {
   @Temporal(TemporalType.TIMESTAMP)
   private Date createdAt;
 
-  @OneToMany(mappedBy="user")
+  @JsonIgnore
+  @OneToMany(mappedBy="user", fetch = FetchType.LAZY)
   private Set<Session> sessions;
 }

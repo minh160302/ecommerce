@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,11 +20,13 @@ public class Product {
   private Long id;
 
   // whoever owns the foreign key column gets the @JoinColumn annotation.
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @MapsId
   @JoinColumn(name = "id")
+  @JsonIgnore
   private Inventory inventory;
 
-  @OneToMany(mappedBy = "product")
+  @JsonIgnore
+  @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
   Set<SessionProduct> sessionProducts;
 }

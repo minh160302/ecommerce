@@ -1,10 +1,10 @@
 -- users
-INSERT INTO users(firstname, lastname, dob, created_at)
-VALUES ('John1', 'Doe1', '01/01/2000', current_timestamp);
-INSERT INTO users(firstname, lastname, dob, created_at)
-VALUES ('John2', 'Doe2', '30/09/2003', current_timestamp);
-INSERT INTO users(firstname, lastname, dob, created_at)
-VALUES ('John3', 'Doe3', '30/09/2003', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John1', 'Doe1', '01/01/2000', 'j1@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John2', 'Doe2', '30/09/2003', 'j2@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John3', 'Doe3', '30/09/2003', 'j3@gmail.com', current_timestamp);
 
 -- inventories
 insert into inventories(name, total_count, in_stock_count, processing_count, delivered_count, in_session_holding,
