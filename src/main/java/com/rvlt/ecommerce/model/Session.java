@@ -32,6 +32,10 @@ public class Session {
   @Temporal(TemporalType.TIMESTAMP)
   private Date updatedAt;
 
+  @NotNull
+  @Column(name = "total_amount")
+  private Double totalAmount;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="user_id", nullable=false)
   private User user;

@@ -23,13 +23,13 @@ values ('Bioderma Facial cleanser', 1000, 1000, 0, 0, 0, 0);
 
 -- products
 insert into products(id, name, in_stock, price)
-select id, name, in_stock_count, 10
+select id, name, in_stock_count, 10.00
 from inventories;
 
 
 -- sessions
-insert into sessions(status, created_at, updated_at, user_id)
-select 'IN_PROGRESS', current_timestamp, NULL, id
+insert into sessions(status, total_amount, created_at, updated_at, user_id)
+select 'INACTIVE', 0.0, current_timestamp, NULL, id
 from users;
 
 

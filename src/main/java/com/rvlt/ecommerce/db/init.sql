@@ -36,20 +36,22 @@ CREATE TABLE if not exists products
 -- create new session each time the previous session is submitted
 CREATE TABLE if not exists sessions
 (
-    id         BIGSERIAL PRIMARY KEY,
-    status     VARCHAR(255) NOT NULL, -- ACTIVE/INACTIVE
-    created_at TIMESTAMP    NOT NULL,
-    updated_at TIMESTAMP,
-    user_id    BIGINT       NOT NULL references users (id) ON DELETE CASCADE
+    id           BIGSERIAL PRIMARY KEY,
+    status       VARCHAR(255)   NOT NULL, -- ACTIVE/INACTIVE
+    total_amount NUMERIC(10, 2) NOT NULL,
+    created_at   TIMESTAMP      NOT NULL,
+    updated_at   TIMESTAMP,
+    user_id      BIGINT         NOT NULL references users (id) ON DELETE CASCADE
 );
 
 
 CREATE TABLE if not exists orders
 (
-    id         BIGSERIAL PRIMARY KEY references sessions (id) ON DELETE CASCADE,
-    status     VARCHAR(255) NOT NULL, -- NOT SUBMITTED/PROCESSING/IN_PROGRESS/DELIVERED
-    created_at TIMESTAMP    NOT NULL,
-    history    VARCHAR(255)           -- update history
+    id           BIGSERIAL PRIMARY KEY references sessions (id) ON DELETE CASCADE,
+    status       VARCHAR(255) NOT NULL, -- NOT SUBMITTED/PROCESSING/IN_PROGRESS/DELIVERED/CANCELLED
+    created_at   TIMESTAMP    NOT NULL,
+    submitted_at TIMESTAMP,
+    history      VARCHAR(255)           -- update history
 );
 
 /**

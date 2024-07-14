@@ -4,7 +4,7 @@ import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.user.UserOnboardingDto;
+import com.rvlt.ecommerce.dto.user.UserOnboardingRq;
 import com.rvlt.ecommerce.model.Order;
 import com.rvlt.ecommerce.model.Session;
 import com.rvlt.ecommerce.model.User;
@@ -73,8 +73,8 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> userOnboarding(RequestMessage<UserOnboardingDto> rq) {
-    UserOnboardingDto input = rq.getData();
+  public ResponseMessage<Void> userOnboarding(RequestMessage<UserOnboardingRq> rq) {
+    UserOnboardingRq input = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -89,13 +89,14 @@ public class UserServiceImpl implements UserService {
       // create new active session
       Session session = new Session();
       session.setUser(user);
-      session.setStatus("ACTIVE");
+      session.setStatus(Constants.SESSION_STATUS.ACTIVE);
       session.setCreatedAt(rq.getTime());
       session.setUpdatedAt(rq.getTime());
+      session.setTotalAmount(0.0);
       sessionRepository.save(session);
       // create new order (NOT_SUBMITTED status)
       Order order = new Order();
-      order.setStatus("NOT_SUBMITTED");
+      order.setStatus(Constants.ORDER_STATUS.NOT_SUBMITTED);
       order.setCreatedAt(rq.getTime());
       order.setHistory("");
       order.setSession(session);

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UserOnboardingDto {
+public class UserOnboardingRq {
   private String firstName;
   private String lastName;
   private String dob;

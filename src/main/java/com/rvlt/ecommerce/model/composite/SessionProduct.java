@@ -12,18 +12,18 @@ import lombok.Setter;
 @Table(name = "sessions_products")
 public class SessionProduct {
   @EmbeddedId
-  SessionProductKey id;
+  private SessionProductKey id;
 
   @ManyToOne
   @MapsId("sessionId")
   @JoinColumn(name = "session_id")
-  Session session;
+  private Session session;
 
   @ManyToOne
   @MapsId("productId")
   @JoinColumn(name = "product_id")
-  Product product;
+  private Product product;
 
   @Column(name = "count")
-  int count;
+  private int count;
 }

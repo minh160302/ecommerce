@@ -19,6 +19,12 @@ public class Product {
   @Column(name = "id")
   private Long id;
 
+  @Column(name = "in_stock")
+  private int inStock;
+
+  @Column(name = "price")
+  private double price;
+
   // whoever owns the foreign key column gets the @JoinColumn annotation.
   @OneToOne(fetch = FetchType.LAZY)
   @MapsId

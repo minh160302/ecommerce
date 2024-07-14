@@ -13,10 +13,10 @@ import java.io.Serializable;
 public class SessionProductKey implements Serializable {
 
   @Column(name = "session_id")
-  Long sessionId;
+  private Long sessionId;
 
   @Column(name = "product_id")
-  Long productId;
+  private Long productId;
 
   // standard constructors, getters, and setters
   // hashcode and equals implementation
