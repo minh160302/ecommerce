@@ -18,7 +18,7 @@ public class InventoryServiceImpl implements InventoryService {
     private InventoryRepository inventoryRepository;
 
     @Override
-    public ResponseMessage<List<Inventory>> getAllInventories() {
+    public ResponseMessage<List<Inventory>> getAllProductInventory() {
         ResponseMessage<List<Inventory>> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
@@ -34,7 +34,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public ResponseMessage<Inventory> getInventoryById(Long id) {
+    public ResponseMessage<Inventory> getProductInInventoryById(Long id) {
         ResponseMessage<Inventory> rs = new ResponseMessage<>();
         Status status = new Status();
         try {

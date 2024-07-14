@@ -6,7 +6,9 @@ import com.rvlt.ecommerce.model.Inventory;
 import java.util.List;
 
 public interface InventoryService {
-    ResponseMessage<List<Inventory>> getAllInventories();
+    ResponseMessage<List<Inventory>> getAllProductInventory();
 
-    ResponseMessage<Inventory> getInventoryById(Long id);
+    ResponseMessage<Inventory> getProductInInventoryById(Long id);
+
+//    ResponseMessage<Integer> getProductTotalCountById(Long id);
 }

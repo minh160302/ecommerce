@@ -19,6 +19,9 @@ public class Product {
   @Column(name = "id")
   private Long id;
 
+  @Column(name = "name")
+  private String name;
+
   @Column(name = "in_stock")
   private int inStock;
 

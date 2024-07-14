@@ -21,13 +21,13 @@ public class InventoryController {
 
     @GetMapping("")
     public ResponseEntity<ResponseMessage<List<Inventory>>> getAllInventory() {
-        ResponseMessage<List<Inventory>> res = inventoryService.getAllInventories();
+        ResponseMessage<List<Inventory>> res = inventoryService.getAllProductInventory();
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @GetMapping("/{inventoryId}")
     public ResponseEntity<ResponseMessage<Inventory>> getInventoryById(@PathVariable Long inventoryId) {
-        ResponseMessage<Inventory> res = inventoryService.getInventoryById(inventoryId);
+        ResponseMessage<Inventory> res = inventoryService.getProductInInventoryById(inventoryId);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }
