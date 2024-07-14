@@ -27,6 +27,10 @@ public class Order {
   @Temporal(TemporalType.TIMESTAMP)
   private Date createdAt;
 
+  @Column(name = "submitted_at")
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date submitted_at;
+
   @NotNull
   @Column(name = "history")
   private String history;

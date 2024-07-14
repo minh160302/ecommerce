@@ -2,7 +2,7 @@ package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.user.UserOnboardingDto;
+import com.rvlt.ecommerce.dto.user.UserOnboardingRq;
 import com.rvlt.ecommerce.model.User;
 import com.rvlt.ecommerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class UserController {
   }
 
   @PostMapping("/onboarding")
-  public ResponseEntity<ResponseMessage<Void>> onboardUser(@RequestBody RequestMessage<UserOnboardingDto> request) {
+  public ResponseEntity<ResponseMessage<Void>> onboardUser(@RequestBody RequestMessage<UserOnboardingRq> request) {
     ResponseMessage<Void> res = userService.userOnboarding(request);
     return new ResponseEntity<>(res, HttpStatus.CREATED);
   }
