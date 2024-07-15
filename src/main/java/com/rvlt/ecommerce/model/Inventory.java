@@ -19,7 +19,7 @@ public class Inventory {
   private Long id;
 
   @NotNull
-  @Column(name = "name")
+  @Column(name = "name", unique = true)
   private String name;
 
   @Column(name = "total_count")
@@ -44,4 +44,13 @@ public class Inventory {
   @PrimaryKeyJoinColumn
   @JsonIgnore
   private Product product;
+
+  public void initializeInventory(int initialCount) {
+    this.totalCount = initialCount;
+    this.inStockCount = 0;
+    this.processingCount = 0;
+    this.deliveredCount = 0;
+    this.inSessionHolding = 0;
+    this.balance = 0;
+  }
 }

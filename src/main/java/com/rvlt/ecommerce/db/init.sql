@@ -14,7 +14,7 @@ CREATE TABLE if not exists users
 CREATE TABLE if not exists inventories
 (
     id                 BIGSERIAL PRIMARY KEY,
-    name               VARCHAR(255) NOT NULL,
+    name               VARCHAR(255) NOT NULL UNIQUE,
     total_count        INT,
     in_stock_count     INT,
     processing_count   INT,
@@ -27,7 +27,7 @@ CREATE TABLE if not exists inventories
 CREATE TABLE if not exists products
 (
     id       BIGSERIAL PRIMARY KEY references inventories (id) ON DELETE CASCADE,
-    name     VARCHAR(255) NOT NULL,
+    name     VARCHAR(255) NOT NULL UNIQUE ,
     in_stock INT,
     price    NUMERIC(10, 2)
 );
