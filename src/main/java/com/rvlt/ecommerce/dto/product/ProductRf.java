@@ -7,5 +7,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AddProductRq extends ProductRf {
+public class ProductRf {
+    private Long id;
+    private String name;
+    private int inStock;
+    private double price;
 }
+

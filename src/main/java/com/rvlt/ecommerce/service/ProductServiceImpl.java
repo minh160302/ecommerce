@@ -69,13 +69,14 @@ public class ProductServiceImpl implements ProductService {
         Status status = new Status();
         AddProductRq input = rq.getData();
         try {
-            // check if exist
+            // check if exist, bad - should check by name
             if(productRepository.existsById(input.getId())){
                 status.setHttpStatusCode(String.valueOf(HttpStatus.CONFLICT.value()));
                 status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
                 status.setMessage("Product already exists");
             }
             else {
+                // create product
                 Product product = new Product();
                 product.setId(input.getId());
                 product.setName(input.getName());
@@ -98,4 +99,6 @@ public class ProductServiceImpl implements ProductService {
         rs.setStatus(status);
         return rs;
     }
+
+
 }
