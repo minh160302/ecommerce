@@ -3,7 +3,6 @@ package com.rvlt.ecommerce.service;
 import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.order.OrderRf;
 import com.rvlt.ecommerce.dto.order.OrderStatusRf;
 import com.rvlt.ecommerce.model.Order;
 import com.rvlt.ecommerce.repository.OrderRepository;
@@ -19,15 +18,13 @@ public class OrderServiceImpl implements OrderService {
     private OrderRepository orderRepository;
 
     @Override
-    public ResponseMessage<OrderRf> getOrderById(Long id) {
-        ResponseMessage<OrderRf> rs = new ResponseMessage<>();
+    public ResponseMessage<Order> getOrderById(Long id) {
+        ResponseMessage<Order> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
             Optional<Order> order = orderRepository.findById(id);
             if (order.isPresent()) {
-                Order orderObj = order.get();
-                OrderRf rf = mapOrderToDTO(orderObj);
-                rs.setData(rf);
+                rs.setData(order.get());
             } else {
                 status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
                 status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -65,15 +62,5 @@ public class OrderServiceImpl implements OrderService {
         }
         rs.setStatus(status);
         return rs;
-    }
-
-    private OrderRf mapOrderToDTO(Order order) {
-        OrderRf rf = new OrderRf();
-        rf.setId(order.getId());
-        rf.setStatus(order.getStatus());
-        rf.setCreatedAt(order.getCreatedAt());
-        rf.setSubmittedAt(order.getSubmitted_at());
-        rf.setHistory(order.getHistory());
-        return rf;
     }
 }

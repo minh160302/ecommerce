@@ -2,11 +2,11 @@ package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
 
-import com.rvlt.ecommerce.dto.order.OrderRf;
 import com.rvlt.ecommerce.dto.order.OrderStatusRf;
+import com.rvlt.ecommerce.model.Order;
 
 public interface OrderService {
-    ResponseMessage<OrderRf> getOrderById(Long id);
+    ResponseMessage<Order> getOrderById(Long id);
 
     ResponseMessage<OrderStatusRf> getOrderStatus(Long id);
 }

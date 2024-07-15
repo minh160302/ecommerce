@@ -1,9 +1,6 @@
 package com.rvlt.ecommerce.controller;
 
-import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.product.AddProductRq;
-import com.rvlt.ecommerce.dto.product.ProductRf;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,20 +17,15 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("")
-    public ResponseEntity<ResponseMessage<List<ProductRf>>> getProduct() {
-        ResponseMessage<List<ProductRf>> res = productService.getAllProduct();
+    public ResponseEntity<ResponseMessage<List<Product>>> getProduct() {
+        ResponseMessage<List<Product>> res = productService.getAllProduct();
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ResponseMessage<ProductRf>> getProductById(@PathVariable Long productId){
-        ResponseMessage<ProductRf> res = productService.getProductById(productId);
+    public ResponseEntity<ResponseMessage<Product>> getProductById(@PathVariable Long productId){
+        ResponseMessage<Product> res = productService.getProductById(productId);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-//    @PostMapping("/add-product")
-//    public ResponseEntity<ResponseMessage<Void>> addProduct(@RequestBody RequestMessage<AddProductRq> request){
-//        ResponseMessage<Void> res = productService.addProduct(request);
-//        return new ResponseEntity<>(res, HttpStatus.OK);
-//    }
 }

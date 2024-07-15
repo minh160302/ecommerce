@@ -1,16 +1,13 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.inventory.InventoryRf;
+import com.rvlt.ecommerce.model.Inventory;
 
 import java.util.List;
 
 public interface InventoryService {
-    ResponseMessage<List<InventoryRf>> getAllProductInInventory();
+    ResponseMessage<List<Inventory>> getAllInventory();
 
-    ResponseMessage<InventoryRf> getProductInInventory(Long id);
+    ResponseMessage<Inventory> getInventoryById(Long id);
 
-//    ResponseMessage<Void> deleteProductInInventory(Long id);
-
-//    ResponseMessage<Integer> getProductTotalCountById(Long id);
 }
