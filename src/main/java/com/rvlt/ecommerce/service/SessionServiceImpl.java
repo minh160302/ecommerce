@@ -5,6 +5,7 @@ import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.session.AddToCartRq;
+import com.rvlt.ecommerce.dto.session.UpdateCountRq;
 import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.model.Session;
@@ -94,6 +95,68 @@ public class SessionServiceImpl implements SessionService {
       sessionRepository.save(session);
       productRepository.save(product);
       inventoryRepository.save(inventory);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  @Transactional
+  public ResponseMessage<Void> updateProductCount(RequestMessage<UpdateCountRq> request) {
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    UpdateCountRq input = request.getData();
+    Date now = new Date();
+    try {
+      // Get Session Product
+      SessionProduct sp;
+      SessionProductKey spKey = new SessionProductKey();
+      spKey.setProductId(input.getProductId());
+      spKey.setSessionId(input.getSessionId());
+      Optional<SessionProduct> spOpt = spRepository.findById(spKey);
+      if (spOpt.isPresent()) {
+        sp = spOpt.get();
+      } else {
+        throw new Exception("Session/Product Id(s) not found");
+      }
+
+      // calculate count diff to update
+      int oldCount = sp.getCount();
+      int countDifference = input.getCount() - oldCount;
+
+      // update count in session_products
+      sp.setCount(input.getCount());
+
+      // Get Inventory
+      Inventory inventory;
+      Optional<Inventory> invOpt = inventoryRepository.findById(input.getProductId());
+      if (invOpt.isPresent()) {
+        inventory = invOpt.get();
+        // update in_session_holding + count diff(can be negative but res > 0)
+        inventory.setInSessionHolding(inventory.getInSessionHolding() + countDifference);
+      } else {
+        throw new Exception("Inventory not found");
+      }
+
+      // Get Session, Product to update total_amount and get price
+      Session session = sp.getSession();
+      Product product = sp.getProduct();
+      double priceDifference = product.getPrice() * countDifference;
+      session.setTotalAmount(session.getTotalAmount() + priceDifference);
+      // update time
+      session.setUpdatedAt(now);
+
+      // commit
+      spRepository.save(sp);
+      inventoryRepository.save(inventory);
+      sessionRepository.save(session);
+
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);

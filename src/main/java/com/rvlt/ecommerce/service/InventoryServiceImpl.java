@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,9 +41,9 @@ public class InventoryServiceImpl implements InventoryService {
         ResponseMessage<Inventory> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
-            Optional<Inventory> inventory = inventoryRepository.findById(id);
-            if (inventory.isPresent()) {
-                rs.setData(inventory.get());
+            Optional<Inventory> invOpt = inventoryRepository.findById(id);
+            if (invOpt.isPresent()) {
+                rs.setData(invOpt.get());
             } else {
                 status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
                 status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -74,6 +75,8 @@ public class InventoryServiceImpl implements InventoryService {
             status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
             status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
             status.setMessage(e.getMessage());
+            // Manually trigger rollback
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
         rs.setStatus(status);
         return rs;
@@ -85,17 +88,17 @@ public class InventoryServiceImpl implements InventoryService {
         ResponseMessage<Void> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
-            Optional<Inventory> inventory = inventoryRepository.findById(id);
-            if (inventory.isPresent()) {
-                Inventory inventoryObj = inventory.get();
+            Optional<Inventory> invOpt = inventoryRepository.findById(id);
+            if (invOpt.isPresent()) {
+                Inventory inventory = invOpt.get();
 
                 // check if input has whitespace or empty
                 // kind of redundant, this should be client-side
                 if (request.getName() != null && !request.getName().trim().isEmpty()) {
-                    inventoryObj.setName(request.getName().trim());
+                    inventory.setName(request.getName().trim());
                 }
 
-                inventoryRepository.save(inventoryObj);
+                inventoryRepository.save(inventory);
 
             } else {
                 status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
@@ -106,6 +109,8 @@ public class InventoryServiceImpl implements InventoryService {
             status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
             status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
             status.setMessage(e.getMessage());
+            // Manually trigger rollback
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
         rs.setStatus(status);
         return rs;

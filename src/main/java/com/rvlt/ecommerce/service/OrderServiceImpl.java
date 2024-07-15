@@ -22,9 +22,9 @@ public class OrderServiceImpl implements OrderService {
         ResponseMessage<Order> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
-            Optional<Order> order = orderRepository.findById(id);
-            if (order.isPresent()) {
-                rs.setData(order.get());
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isPresent()) {
+                rs.setData(orderOpt.get());
             } else {
                 status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
                 status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -44,12 +44,12 @@ public class OrderServiceImpl implements OrderService {
         ResponseMessage<OrderStatusRs> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
-            Optional<Order> order = orderRepository.findById(id);
-            if (order.isPresent()) {
-                Order orderObj = order.get();
-                OrderStatusRs rf = new OrderStatusRs();
-                rf.setStatus(orderObj.getStatus());
-                rs.setData(rf);
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isPresent()) {
+                Order order = orderOpt.get();
+                OrderStatusRs response = new OrderStatusRs();
+                response.setStatus(order.getStatus());
+                rs.setData(response);
             } else {
                 status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
                 status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);

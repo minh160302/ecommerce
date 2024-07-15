@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,9 +43,9 @@ public class ProductServiceImpl implements ProductService {
         Status status = new Status();
 
         try {
-            Optional<Product> product = productRepository.findById(id);
-            if(product.isPresent()){
-                rs.setData(product.get());
+            Optional<Product> productOpt = productRepository.findById(id);
+            if(productOpt.isPresent()){
+                rs.setData(productOpt.get());
             } else {
                 status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
                 status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -65,13 +66,13 @@ public class ProductServiceImpl implements ProductService {
         ResponseMessage<Void> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
-            Optional<Product> product = productRepository.findById(id);
-            if(product.isPresent()){
-                Product productObj = product.get();
+            Optional<Product> productOpt = productRepository.findById(id);
+            if(productOpt.isPresent()){
+                Product product = productOpt.get();
 
                 if (request.getPrice() > 0){
-                    productObj.setPrice(request.getPrice());
-                    productRepository.save(productObj);
+                    product.setPrice(request.getPrice());
+                    productRepository.save(product);
                 } else {
                     status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
                     status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -86,6 +87,8 @@ public class ProductServiceImpl implements ProductService {
             status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
             status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
             status.setMessage("Error updating product: " + e.getMessage());
+            // Manually trigger rollback
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
         rs.setStatus(status);
         return rs;
