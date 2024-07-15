@@ -22,7 +22,7 @@ public class SessionController {
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
-  @PutMapping("/update-cart")
+  @PostMapping("/update-cart")
   public ResponseEntity<ResponseMessage<Void>> updateProductCount(@RequestBody RequestMessage<UpdateCountRq> request) {
     ResponseMessage<Void> res = sessionService.updateProductCount(request);
     return new ResponseEntity<>(res, HttpStatus.OK);

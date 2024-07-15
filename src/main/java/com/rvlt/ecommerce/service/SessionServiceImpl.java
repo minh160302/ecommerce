@@ -76,8 +76,7 @@ public class SessionServiceImpl implements SessionService {
         sp = spOpt.get();
         sp.setCount(sp.getCount() + input.getQuantity());
         status.setMessage("Updated quantity in cart");
-      }
-      else {
+      } else {
         sp = new SessionProduct();
         sp.setId(spKey);
         sp.setSession(session);
@@ -123,27 +122,26 @@ public class SessionServiceImpl implements SessionService {
       if (spOpt.isPresent()) {
         sp = spOpt.get();
       } else {
-        throw new Exception("Session/Product Id(s) not found");
+        throw new Exception("Invalid request or IDs not found.");
       }
-
       // calculate count diff to update
       int oldCount = sp.getCount();
       int countDifference = input.getCount() - oldCount;
-
-      // update count in session_products
-      sp.setCount(input.getCount());
-
       // Get Inventory
       Inventory inventory;
       Optional<Inventory> invOpt = inventoryRepository.findById(input.getProductId());
       if (invOpt.isPresent()) {
         inventory = invOpt.get();
+        if (inventory.getInStockCount() < input.getCount() || input.getCount() >= 1000) {
+          throw new Exception("Too many items ordered.");
+        }
         // update in_session_holding + count diff(can be negative but res > 0)
         inventory.setInSessionHolding(inventory.getInSessionHolding() + countDifference);
       } else {
-        throw new Exception("Inventory not found");
+        throw new Exception("Inventory not found.");
       }
-
+      // update count in session_products
+      sp.setCount(input.getCount());
       // Get Session, Product to update total_amount and get price
       Session session = sp.getSession();
       Product product = sp.getProduct();
@@ -156,7 +154,6 @@ public class SessionServiceImpl implements SessionService {
       spRepository.save(sp);
       inventoryRepository.save(inventory);
       sessionRepository.save(session);
-
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
