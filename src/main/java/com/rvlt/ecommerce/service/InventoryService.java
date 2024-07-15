@@ -12,5 +12,5 @@ public interface InventoryService {
 
     ResponseMessage<Void> deleteInventoryById(Long id);
 
-    ResponseM
+    ResponseMessage<Void> updateIn
 }

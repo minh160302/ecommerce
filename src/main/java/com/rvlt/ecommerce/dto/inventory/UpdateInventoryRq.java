@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UpdateInventoryNameRq {
+public class UpdateInventoryRq {
     private String name;
 }
