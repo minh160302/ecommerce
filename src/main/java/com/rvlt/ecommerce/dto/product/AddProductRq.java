@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AddProductRq extends ProductRf {
+public class AddProductRq {
 }

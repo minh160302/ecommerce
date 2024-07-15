@@ -1,7 +1,7 @@
 package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.model.Inventory;
+import com.rvlt.ecommerce.dto.inventory.InventoryRf;
 import com.rvlt.ecommerce.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,14 +20,14 @@ public class InventoryController {
     private InventoryService inventoryService;
 
     @GetMapping("")
-    public ResponseEntity<ResponseMessage<List<Inventory>>> getAllInventory() {
-        ResponseMessage<List<Inventory>> res = inventoryService.getAllProductInventory();
+    public ResponseEntity<ResponseMessage<List<InventoryRf>>> getAllInventory() {
+        ResponseMessage<List<InventoryRf>> res = inventoryService.getAllProductInInventory();
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @GetMapping("/{inventoryId}")
-    public ResponseEntity<ResponseMessage<Inventory>> getInventoryById(@PathVariable Long inventoryId) {
-        ResponseMessage<Inventory> res = inventoryService.getProductInInventoryById(inventoryId);
+    public ResponseEntity<ResponseMessage<InventoryRf>> getInventoryById(@PathVariable Long inventoryId) {
+        ResponseMessage<InventoryRf> res = inventoryService.getProductInInventory(inventoryId);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }
