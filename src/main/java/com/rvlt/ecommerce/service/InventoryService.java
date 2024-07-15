@@ -1,6 +1,7 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
+import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.model.Inventory;
 
 import java.util.List;
@@ -12,5 +13,5 @@ public interface InventoryService {
 
     ResponseMessage<Void> deleteInventoryById(Long id);
 
-    ResponseMessage<Void> updateIn
+    ResponseMessage<Void> updateInventory(Long id, UpdateInventoryRq request);
 }

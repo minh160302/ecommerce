@@ -1,8 +1,10 @@
 package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
+import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.service.InventoryService;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,12 @@ public class InventoryController {
     @DeleteMapping("/{inventoryId}")
     public ResponseEntity<ResponseMessage<Void>> deleteInventoryById(@PathVariable Long inventoryId) {
         ResponseMessage<Void> res = inventoryService.deleteInventoryById(inventoryId);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @PutMapping("/{inventoryId}")
+    public ResponseEntity<ResponseMessage<Void>> updateInventoryById(@PathVariable Long inventoryId, @RequestBody UpdateInventoryRq request) {
+        ResponseMessage<Void> res = inventoryService.updateInventory(inventoryId, request);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

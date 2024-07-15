@@ -1,6 +1,7 @@
 package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
+import com.rvlt.ecommerce.dto.product.UpdateProductRq;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,4 +29,9 @@ public class ProductController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
+    @PutMapping("/{productId}")
+    public ResponseEntity<ResponseMessage<Void>> updateProductById(@PathVariable Long productId, @RequestBody UpdateProductRq request){
+        ResponseMessage<Void> res = productService.updateProduct(productId, request);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
 }
