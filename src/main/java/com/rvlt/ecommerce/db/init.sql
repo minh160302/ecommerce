@@ -72,8 +72,8 @@ CREATE TABLE if not exists sessions_products
 (
     session_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
-    CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id),
-    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id),
+    CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE ,
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE ,
     count      INT
 );
 

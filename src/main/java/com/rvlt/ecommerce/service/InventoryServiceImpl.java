@@ -54,4 +54,28 @@ public class InventoryServiceImpl implements InventoryService {
         rs.setStatus(status);
         return rs;
     }
+
+    @Override
+    public ResponseMessage<Void> deleteInventoryById(Long id) {
+        ResponseMessage<Void> rs = new ResponseMessage<>();
+        Status status = new Status();
+        try {
+            if(inventoryRepository.existsById(id)) {
+                inventoryRepository.deleteById(id);
+            } else {
+                status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
+                status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+                status.setMessage("Inventory not found");
+            }
+        } catch (Exception e) {
+            status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+            status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+            status.setMessage(e.getMessage());
+        }
+        rs.setStatus(status);
+        return rs;
+    }
+
+
+
 }

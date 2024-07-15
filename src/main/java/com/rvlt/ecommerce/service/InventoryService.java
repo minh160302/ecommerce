@@ -10,4 +10,7 @@ public interface InventoryService {
 
     ResponseMessage<Inventory> getInventoryById(Long id);
 
+    ResponseMessage<Void> deleteInventoryById(Long id);
+
+    ResponseM
 }
