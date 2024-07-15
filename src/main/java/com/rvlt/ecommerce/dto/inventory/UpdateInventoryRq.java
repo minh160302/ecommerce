@@ -1,4 +1,4 @@
-package com.rvlt.ecommerce.dto.order;
+package com.rvlt.ecommerce.dto.inventory;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class OrderStatusRf {
-    private String status;
+public class UpdateInventoryNameRq {
+    private String name;
 }

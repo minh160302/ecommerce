@@ -3,7 +3,7 @@ package com.rvlt.ecommerce.service;
 import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.order.OrderStatusRf;
+import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.model.Order;
 import com.rvlt.ecommerce.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,14 +40,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseMessage<OrderStatusRf> getOrderStatus(Long id) {
-        ResponseMessage<OrderStatusRf> rs = new ResponseMessage<>();
+    public ResponseMessage<OrderStatusRs> getOrderStatus(Long id) {
+        ResponseMessage<OrderStatusRs> rs = new ResponseMessage<>();
         Status status = new Status();
         try {
             Optional<Order> order = orderRepository.findById(id);
             if (order.isPresent()) {
                 Order orderObj = order.get();
-                OrderStatusRf rf = new OrderStatusRf();
+                OrderStatusRs rf = new OrderStatusRs();
                 rf.setStatus(orderObj.getStatus());
                 rs.setData(rf);
             } else {

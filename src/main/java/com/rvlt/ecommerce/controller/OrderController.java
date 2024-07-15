@@ -1,7 +1,7 @@
 package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.order.OrderStatusRf;
+import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.model.Order;
 import com.rvlt.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +25,8 @@ public class OrderController {
     }
 
     @GetMapping("/tracking/{orderId}")
-    public ResponseEntity<ResponseMessage<OrderStatusRf>> getOrderStatus(@PathVariable Long orderId) {
-        ResponseMessage<OrderStatusRf> res = orderService.getOrderStatus(orderId);
+    public ResponseEntity<ResponseMessage<OrderStatusRs>> getOrderStatus(@PathVariable Long orderId) {
+        ResponseMessage<OrderStatusRs> res = orderService.getOrderStatus(orderId);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }
