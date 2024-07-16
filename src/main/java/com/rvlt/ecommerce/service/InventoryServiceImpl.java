@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -142,6 +143,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   @Transactional
   public ResponseMessage<Void> importBatchInventories(CreateInventoryBatchRq request) {
+    this.aggregateBatchCreateInventory(request);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -192,5 +194,22 @@ public class InventoryServiceImpl implements InventoryService {
 
     inventoryRepository.save(inventory);
     productRepository.save(product);
+  }
+
+  private void aggregateBatchCreateInventory(CreateInventoryBatchRq request) {
+    List<CreateInventoryRq> rqList = request.getInventories();
+    HashMap<String, Integer> freq = new HashMap<>();
+    for (CreateInventoryRq inventoryRq : request.getInventories()) {
+      String inventoryRqName = inventoryRq.getName().trim();
+      int q = freq.getOrDefault(inventoryRqName, 0);
+      freq.put(inventoryRqName, q + inventoryRq.getCount());
+    }
+    for (String key : freq.keySet()) {
+      CreateInventoryRq rq = new CreateInventoryRq();
+      rq.setName(key);
+      rq.setCount(freq.get(key));
+      rqList.add(rq);
+    }
+    request.setInventories(rqList);
   }
 }
