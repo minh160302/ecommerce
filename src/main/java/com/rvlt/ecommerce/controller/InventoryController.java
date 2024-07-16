@@ -26,20 +26,19 @@ public class InventoryController {
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
-
   @GetMapping("/{inventoryId}")
   public ResponseEntity<ResponseMessage<Inventory>> getInventoryById(@PathVariable Long inventoryId) {
     ResponseMessage<Inventory> res = inventoryService.getInventoryById(inventoryId);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
-  @PostMapping
+  @PostMapping("")
   public ResponseEntity<ResponseMessage<Void>> importSingleInventory(@RequestBody CreateInventoryRq request) {
       ResponseMessage<Void> res = inventoryService.importSingleInventory(request);
       return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
-  @PostMapping
+  @PostMapping("/batch")
   public ResponseEntity<ResponseMessage<Void>> importBatchInventories(@RequestBody CreateInventoryBatchRq request) {
     ResponseMessage<Void> res = inventoryService.importBatchInventories(request);
     return new ResponseEntity<>(res, HttpStatus.OK);

@@ -126,17 +126,7 @@ public class InventoryServiceImpl implements InventoryService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
-      Inventory inventory = new Inventory();
-      inventory.setName(request.getName());
-      inventory.initializeInventory(request.getInitialCount());
-      Product product = new Product();
-      product.setName(inventory.getName());
-      product.setPrice(-1);
-      product.setInStock(inventory.getInStockCount());
-      product.setInventory(inventory);
-      // commit
-      inventoryRepository.save(inventory);
-      productRepository.save(product);
+      createNewInventory(request);
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -154,15 +144,56 @@ public class InventoryServiceImpl implements InventoryService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
-      // TODO: insert new and update existing inventories
+      for (CreateInventoryRq inventoryRq : request.getInventories()) {
+        Optional<Inventory> invOpt = inventoryRepository.findByName(inventoryRq.getName());
+        // if existing inventory, update count
+        if (invOpt.isPresent()) {
+          //
+          Inventory inventory = invOpt.get();
+          updateExistingInventory(inventory, inventoryRq);
+        } else {
+          // create new inventory, product
+          createNewInventory(inventoryRq);
+        }
+      }
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      status.setMessage(e.getMessage());
+      status.setMessage("Batch import failed:" + e.getMessage());
       // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
     return rs;
+  }
+
+  private void updateExistingInventory(Inventory inventory, CreateInventoryRq request) {
+    int additionalCount = request.getInitialCount();
+    inventory.setTotalCount(inventory.getTotalCount() + additionalCount);
+    inventory.setInStockCount(inventory.getInStockCount() + additionalCount);
+
+    inventoryRepository.save(inventory);
+
+    // Update associated product
+    Product product = inventory.getProduct();
+    if (product != null) {
+      product.setInStock(inventory.getInStockCount());
+      productRepository.save(product);
+    }
+  }
+
+  private void createNewInventory(CreateInventoryRq request) {
+    Inventory inventory = new Inventory();
+    inventory.setName(request.getName());
+    inventory.initializeInventory(request.getInitialCount());
+
+    Product product = new Product();
+    product.setName(inventory.getName());
+    product.setPrice(-1);
+    product.setInStock(inventory.getInStockCount());
+    product.setInventory(inventory);
+
+    inventoryRepository.save(inventory);
+    productRepository.save(product);
   }
 }

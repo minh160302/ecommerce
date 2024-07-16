@@ -47,7 +47,7 @@ public class Inventory {
 
   public void initializeInventory(int initialCount) {
     this.totalCount = initialCount;
-    this.inStockCount = 0;
+    this.inStockCount = initialCount;
     this.processingCount = 0;
     this.deliveredCount = 0;
     this.inSessionHolding = 0;
