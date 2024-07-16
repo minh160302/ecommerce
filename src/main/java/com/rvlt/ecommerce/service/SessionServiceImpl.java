@@ -5,6 +5,7 @@ import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.session.AddToCartRq;
+import com.rvlt.ecommerce.dto.session.DeleteFromCartBatchRq;
 import com.rvlt.ecommerce.dto.session.DeleteFromCartRq;
 import com.rvlt.ecommerce.dto.session.UpdateCountRq;
 import com.rvlt.ecommerce.model.Inventory;
@@ -214,9 +215,10 @@ public class SessionServiceImpl implements SessionService {
         // java consistency, delete SP object in java mem (redundant ?)
         // from research, if we continue using the same Session object, the sp will still be there without this line (in theory).
         session.getSessionProducts().remove(sp);
+        // commit updated session
         sessionRepository.save(session);
 
-        // Delete sp from table
+        // commit delete sp from sp table
         spRepository.delete(sp);
       } else {
         throw new Exception("Invalid request or IDs not found.");
@@ -226,6 +228,83 @@ public class SessionServiceImpl implements SessionService {
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
       // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  @Transactional
+  public ResponseMessage<Void> deleteFromCartBatch(RequestMessage<DeleteFromCartBatchRq> request) {
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    DeleteFromCartBatchRq input = request.getData();
+    Date now = new Date();
+
+    try {
+      if (input.getProducts() == null || input.getProducts().isEmpty()) {
+        throw new IllegalStateException("Invalid request or products not found.");
+      }
+      Session session;
+      Long sessionId = input.getSessionId();
+      Optional<Session> sessionOpt = sessionRepository.findById(sessionId);
+      if (sessionOpt.isPresent()) {
+        session = sessionOpt.get();
+      } else {
+        throw new Exception("Session not found.");
+      }
+      // helper var for total_amount
+      double totalPriceDiff = 0;
+
+      for (DeleteFromCartRq product : input.getProducts()) {
+        SessionProductKey spKey = new SessionProductKey();
+        spKey.setProductId(product.getProductId());
+        spKey.setSessionId(sessionId);
+        Optional<SessionProduct> spOpt = spRepository.findById(spKey);
+
+        if (spOpt.isPresent()) {
+          SessionProduct sp = spOpt.get();
+          int countToRemove = sp.getCount();
+          if (countToRemove <= 0) {
+            throw new IllegalStateException("Invalid count to remove");
+          }
+
+          // update in_session_holding
+          Product productObj = sp.getProduct();
+          Inventory inventory = productObj.getInventory();
+          if (inventory != null) {
+            inventory.setInSessionHolding(inventory.getInSessionHolding() - countToRemove);
+            inventoryRepository.save(inventory);
+          }
+
+          // get each price diff and increment
+          double priceDifference = productObj.getPrice() * countToRemove;
+          totalPriceDiff += priceDifference;
+          // delete sp object
+          session.getSessionProducts().remove(sp);
+          // commit delete sp
+          spRepository.delete(sp);
+        } else {
+          // this stops the batch though, one item might be wrong, but it should continue
+          throw new Exception("Product " + product.getProductId() + " not found in session " + sessionId);
+        }
+      }
+      // update session total_amount
+      double newTotalAmount = session.getTotalAmount() - totalPriceDiff;
+      if (newTotalAmount < 0) {
+        throw new IllegalStateException("Session total amount would become negative");
+      }
+      session.setTotalAmount(newTotalAmount);
+      session.setUpdatedAt(now);
+      // commit update session
+      sessionRepository.save(session);
+
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manual rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
