@@ -138,7 +138,7 @@ public class SessionServiceImpl implements SessionService {
       Optional<Inventory> invOpt = inventoryRepository.findById(input.getProductId());
       if (invOpt.isPresent()) {
         inventory = invOpt.get();
-        // update in_session_holding + count diff(can be negative but res > 0)
+        // update in_session_holding + count diff(can be negative but res >= 0)
         inventory.setInSessionHolding(inventory.getInSessionHolding() + countDifference);
       } else {
         throw new Exception("Inventory not found");
