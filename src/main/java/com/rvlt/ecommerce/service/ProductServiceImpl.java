@@ -6,7 +6,11 @@ import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
 import com.rvlt.ecommerce.model.Product;
+import com.rvlt.ecommerce.model.Session;
+import com.rvlt.ecommerce.model.composite.SessionProduct;
 import com.rvlt.ecommerce.repository.ProductRepository;
+import com.rvlt.ecommerce.repository.SessionProductRepository;
+import com.rvlt.ecommerce.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,10 @@ import java.util.Optional;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private SessionRepository sessionRepository;
+    @Autowired
+    private SessionProductRepository sessionProductRepository;
 
     @Override
     public ResponseMessage<List<Product>> getAllProduct() {
@@ -71,8 +79,20 @@ public class ProductServiceImpl implements ProductService {
                 Product product = productOpt.get();
 
                 if (request.getPrice() > 0){
-                    product.setPrice(request.getPrice());
+                    double oldPrice = product.getPrice();
+                    double newPrice = request.getPrice();
+                    product.setPrice(newPrice);
                     productRepository.save(product);
+
+                    // get list of sessionProduct and update related sessions total_Amount
+                    List<SessionProduct> sessionProducts = sessionProductRepository.findByProductId(product.getId());
+                    for (SessionProduct sp : sessionProducts) {
+                        Session session = sp.getSession();
+                        int count = sp.getCount();
+                        double priceDifference = (newPrice - oldPrice) * count;
+                        session.setTotalAmount(session.getTotalAmount() + priceDifference);
+                        sessionRepository.save(session);
+                    }
                 } else {
                     status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
                     status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
