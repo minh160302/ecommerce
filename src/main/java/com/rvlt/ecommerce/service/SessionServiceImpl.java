@@ -183,26 +183,18 @@ public class SessionServiceImpl implements SessionService {
       Optional<SessionProduct> spOpt = spRepository.findById(spKey);
       if (spOpt.isPresent()) {
         sp = spOpt.get();
-        // count to decrement
         int countToRemove = sp.getCount();
-
-        // check count
         if (countToRemove <= 0) {
           throw new IllegalStateException("Invalid count to remove");
         }
-
-        // get Session, Product
         Session session = sp.getSession();
         Product product = sp.getProduct();
-
         // update in_session_holding in Inventory
         Inventory inventory = product.getInventory();
-        // should be more edge checks other than null
         if (inventory != null) {
           inventory.setInSessionHolding(inventory.getInSessionHolding() - countToRemove);
           inventoryRepository.save(inventory);
         }
-
         // update total_amount in session
         // calc price diff to subtract total amount, should there be checks ?
         double priceDifference = product.getPrice() * countToRemove;

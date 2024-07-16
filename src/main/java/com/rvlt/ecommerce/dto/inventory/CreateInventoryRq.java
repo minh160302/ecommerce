@@ -12,6 +12,6 @@ public class CreateInventoryRq {
   @NotNull
   private String name;
 
-  private int initialCount;
+  private int count;
 //  private String description;
 }

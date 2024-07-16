@@ -98,11 +98,7 @@ public class InventoryServiceImpl implements InventoryService {
       Optional<Inventory> invOpt = inventoryRepository.findById(id);
       if (invOpt.isPresent()) {
         Inventory inventory = invOpt.get();
-        // check if input has whitespace or empty
-        // kind of redundant, this should be client-side
-        if (request.getName() != null && !request.getName().trim().isEmpty()) {
-          inventory.setName(request.getName().trim());
-        }
+        inventory.setName(request.getName().trim());
         inventoryRepository.save(inventory);
       } else {
         status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
@@ -128,10 +124,8 @@ public class InventoryServiceImpl implements InventoryService {
     try {
       Optional<Inventory> invOpt = inventoryRepository.findByName(request.getName());
       if (invOpt.isPresent()) {
-        // if exist, update count
         updateExistingInventory(invOpt.get(), request);
       } else {
-        // else create new
         createNewInventory(request);
       }
     } catch (Exception e) {
@@ -151,15 +145,16 @@ public class InventoryServiceImpl implements InventoryService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
+      List<CreateInventoryRq> rqList = request.getInventories();
+      if (rqList.size() > 100) {
+        throw new Exception("Import too many inventories at once.");
+      }
       for (CreateInventoryRq inventoryRq : request.getInventories()) {
         Optional<Inventory> invOpt = inventoryRepository.findByName(inventoryRq.getName());
-        // if existing inventory, update count
         if (invOpt.isPresent()) {
-          //
           Inventory inventory = invOpt.get();
           updateExistingInventory(inventory, inventoryRq);
         } else {
-          // create new inventory, product
           createNewInventory(inventoryRq);
         }
       }
@@ -175,24 +170,19 @@ public class InventoryServiceImpl implements InventoryService {
   }
 
   private void updateExistingInventory(Inventory inventory, CreateInventoryRq request) {
-    int additionalCount = request.getInitialCount();
-    inventory.setTotalCount(inventory.getTotalCount() + additionalCount);
-    inventory.setInStockCount(inventory.getInStockCount() + additionalCount);
-
+    int count = request.getCount();
+    inventory.setTotalCount(inventory.getTotalCount() + count);
+    inventory.setInStockCount(inventory.getInStockCount() + count);
     inventoryRepository.save(inventory);
-
-    // Update product
     Product product = inventory.getProduct();
-    if (product != null) {
-      product.setInStock(inventory.getInStockCount());
-      productRepository.save(product);
-    }
+    product.setInStock(inventory.getInStockCount());
+    productRepository.save(product);
   }
 
   private void createNewInventory(CreateInventoryRq request) {
     Inventory inventory = new Inventory();
     inventory.setName(request.getName());
-    inventory.initializeInventory(request.getInitialCount());
+    inventory.initializeInventory(request.getCount());
 
     Product product = new Product();
     product.setName(inventory.getName());
