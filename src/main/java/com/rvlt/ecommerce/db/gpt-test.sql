@@ -1,4 +1,4 @@
--- Users with diverse backgrounds (unchanged)
+-- Users with diverse backgrounds
 INSERT INTO users(firstname, lastname, dob, email, created_at) VALUES
                                                                    ('Alice', 'Johnson', '15/03/1985', 'alice.j@email.com', current_timestamp - interval '2 years'),
                                                                    ('Mohammed', 'Al-Fayed', '22/09/1990', 'mo.fayed@email.com', current_timestamp - interval '1 year'),
@@ -6,7 +6,7 @@ INSERT INTO users(firstname, lastname, dob, email, created_at) VALUES
                                                                    ('Maria', 'Garcia', '30/06/1995', 'maria.g@email.com', current_timestamp - interval '3 months'),
                                                                    ('Olga', 'Petrova', '18/11/1992', 'olga.p@email.com', current_timestamp - interval '1 month');
 
--- Inventories with various products and quantities (updated in_session_holding)
+-- Inventories with various products and quantities
 INSERT INTO inventories(name, total_count, in_stock_count, processing_count, delivered_count, in_session_holding, balance) VALUES
                                                                                                                                ('High-End Gaming PC', 20, 12, 3, 2, 3, 0),
                                                                                                                                ('Wireless Earbuds', 500, 445, 30, 20, 5, 0),
@@ -17,7 +17,7 @@ INSERT INTO inventories(name, total_count, in_stock_count, processing_count, del
                                                                                                                                ('Digital Camera', 30, 23, 3, 2, 2, 0),
                                                                                                                                ('Robot Vacuum Cleaner', 60, 49, 7, 3, 1, 0);
 
--- Products with varying prices (unchanged)
+-- Products with varying prices
 INSERT INTO products(id, name, in_stock, price)
 SELECT id, name, in_stock_count,
        CASE
@@ -33,7 +33,7 @@ SELECT id, name, in_stock_count,
            END
 FROM inventories;
 
--- Sessions with different statuses and amounts (updated total_amount)
+-- Sessions with different statuses and amounts
 INSERT INTO sessions(status, total_amount, created_at, updated_at, user_id) VALUES
                                                                                 ('ACTIVE', 4799.97, current_timestamp - interval '2 days', current_timestamp - interval '1 day', 1),
                                                                                 ('ACTIVE', 349.97, current_timestamp - interval '5 days', current_timestamp - interval '4 days', 2),
@@ -41,7 +41,7 @@ INSERT INTO sessions(status, total_amount, created_at, updated_at, user_id) VALU
                                                                                 ('INACTIVE', 0, current_timestamp - interval '10 days', NULL, 4),
                                                                                 ('ACTIVE', 2149.97, current_timestamp - interval '3 hours', current_timestamp - interval '1 hour', 5);
 
--- Orders with various statuses (unchanged)
+-- Orders with various statuses
 INSERT INTO orders(id, status, created_at, submitted_at, history) VALUES
                                                                       (1, 'PROCESSING', current_timestamp - interval '2 days', current_timestamp - interval '1 day', 'Order received, payment confirmed'),
                                                                       (2, 'DELIVERED', current_timestamp - interval '5 days', current_timestamp - interval '4 days', 'Order received, processed, shipped, delivered'),
@@ -49,7 +49,7 @@ INSERT INTO orders(id, status, created_at, submitted_at, history) VALUES
                                                                       (4, 'NOT_SUBMITTED', current_timestamp - interval '10 days', NULL, NULL),
                                                                       (5, 'CANCELLED', current_timestamp - interval '3 hours', current_timestamp - interval '1 hour', 'Order received, cancelled by customer');
 
--- Sessions-Products relationships (updated with diverse counts)
+-- Sessions-Products relationships
 INSERT INTO sessions_products(session_id, product_id, count) VALUES
                                                                  (1, 1, 3),  -- 3 High-End Gaming PCs in session 1
                                                                  (2, 2, 2),  -- 2 Wireless Earbuds in session 2

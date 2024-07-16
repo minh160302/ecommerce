@@ -126,7 +126,14 @@ public class InventoryServiceImpl implements InventoryService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
-      createNewInventory(request);
+      Optional<Inventory> invOpt = inventoryRepository.findByName(request.getName());
+      if (invOpt.isPresent()) {
+        // if exist, update count
+        updateExistingInventory(invOpt.get(), request);
+      } else {
+        // else create new
+        createNewInventory(request);
+      }
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -174,7 +181,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     inventoryRepository.save(inventory);
 
-    // Update associated product
+    // Update product
     Product product = inventory.getProduct();
     if (product != null) {
       product.setInStock(inventory.getInStockCount());
