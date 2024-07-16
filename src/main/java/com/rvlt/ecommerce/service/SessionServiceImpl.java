@@ -5,6 +5,7 @@ import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.session.AddToCartRq;
+import com.rvlt.ecommerce.dto.session.DeleteFromCartRq;
 import com.rvlt.ecommerce.dto.session.UpdateCountRq;
 import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.model.Product;
@@ -154,6 +155,72 @@ public class SessionServiceImpl implements SessionService {
       spRepository.save(sp);
       inventoryRepository.save(inventory);
       sessionRepository.save(session);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  @Transactional
+  public ResponseMessage<Void> deleteFromCart(RequestMessage<DeleteFromCartRq> request) {
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    DeleteFromCartRq input = request.getData();
+    Date now = new Date();
+    try {
+      // Get Session Product
+      SessionProduct sp;
+      SessionProductKey spKey = new SessionProductKey();
+      spKey.setProductId(input.getProductId());
+      spKey.setSessionId(input.getSessionId());
+      Optional<SessionProduct> spOpt = spRepository.findById(spKey);
+      if (spOpt.isPresent()) {
+        sp = spOpt.get();
+        // count to decrement
+        int countToRemove = sp.getCount();
+
+        // check count
+        if (countToRemove <= 0) {
+          throw new IllegalStateException("Invalid count to remove");
+        }
+
+        // get Session, Product
+        Session session = sp.getSession();
+        Product product = sp.getProduct();
+
+        // update in_session_holding in Inventory
+        Inventory inventory = product.getInventory();
+        // should be more edge checks other than null
+        if (inventory != null) {
+          inventory.setInSessionHolding(inventory.getInSessionHolding() - countToRemove);
+          inventoryRepository.save(inventory);
+        }
+
+        // update total_amount in session
+        // calc price diff to subtract total amount, should there be checks ?
+        double priceDifference = product.getPrice() * countToRemove;
+        double newTotalAmount = session.getTotalAmount() - priceDifference;
+        if (newTotalAmount < 0) {
+          throw new IllegalStateException("Session total amount would become negative");
+        }
+        session.setTotalAmount(newTotalAmount);
+        session.setUpdatedAt(now);
+        // java consistency, delete SP object in java mem (redundant ?)
+        // from research, if we continue using the same Session object, the sp will still be there without this line (in theory).
+        session.getSessionProducts().remove(sp);
+        sessionRepository.save(session);
+
+        // Delete sp from table
+        spRepository.delete(sp);
+      } else {
+        throw new Exception("Invalid request or IDs not found.");
+      }
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);

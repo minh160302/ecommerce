@@ -3,6 +3,7 @@ package com.rvlt.ecommerce.controller;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.session.AddToCartRq;
+import com.rvlt.ecommerce.dto.session.DeleteFromCartRq;
 import com.rvlt.ecommerce.dto.session.UpdateCountRq;
 import com.rvlt.ecommerce.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,12 @@ public class SessionController {
   @PostMapping("/update-cart")
   public ResponseEntity<ResponseMessage<Void>> updateProductCount(@RequestBody RequestMessage<UpdateCountRq> request) {
     ResponseMessage<Void> res = sessionService.updateProductCount(request);
+    return new ResponseEntity<>(res, HttpStatus.OK);
+  }
+
+  @DeleteMapping("/delete-from-cart")
+  public ResponseEntity<ResponseMessage<Void>> deleteFromCart(@RequestBody RequestMessage<DeleteFromCartRq> request) {
+    ResponseMessage<Void> res = sessionService.deleteFromCart(request);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 }
