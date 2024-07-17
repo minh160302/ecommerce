@@ -10,12 +10,15 @@ import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.repository.InventoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
+import com.rvlt.ecommerce.util.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -148,7 +151,7 @@ public class InventoryServiceImpl implements InventoryService {
     Status status = new Status();
     try {
       List<CreateInventoryRq> rqList = request.getInventories();
-      if (rqList.size() > 100) {
+      if (rqList.size() > 20) {
         throw new Exception("Import too many inventories at once.");
       }
       for (CreateInventoryRq inventoryRq : request.getInventories()) {
@@ -165,6 +168,24 @@ public class InventoryServiceImpl implements InventoryService {
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage("Batch import failed:" + e.getMessage());
       // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  @Transactional
+  public ResponseMessage<Void> importBatchThroughExcel(InputStream file) {
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    try {
+      CreateInventoryBatchRq batchRequest = ExcelUtils.parseExcelToCreateInventoryBatchRq(file);
+      return importBatchInventories(batchRequest);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage("Excel import failed: " + e.getMessage());
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);

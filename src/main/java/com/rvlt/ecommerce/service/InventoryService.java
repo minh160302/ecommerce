@@ -5,7 +5,10 @@ import com.rvlt.ecommerce.dto.inventory.CreateInventoryBatchRq;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.model.Inventory;
+import org.apache.coyote.Response;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 public interface InventoryService {
@@ -20,4 +23,6 @@ public interface InventoryService {
   ResponseMessage<Void> importSingleInventory(CreateInventoryRq request);
 
   ResponseMessage<Void> importBatchInventories(CreateInventoryBatchRq request);
+
+  ResponseMessage<Void> importBatchThroughExcel(InputStream file);
 }
