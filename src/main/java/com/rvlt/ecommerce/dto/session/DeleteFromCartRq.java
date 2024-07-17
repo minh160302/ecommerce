@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class DeleteFromCartRq {
     @NotNull
-    private Long productId;
+    private String productId;
     @NotNull
-    private Long sessionId;
+    private String sessionId;
 }

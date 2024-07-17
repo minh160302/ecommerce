@@ -4,7 +4,9 @@ import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.session.*;
+import com.rvlt.ecommerce.dto.session.DeleteFromCartBatchRq;
+import com.rvlt.ecommerce.dto.session.DeleteFromCartRq;
+import com.rvlt.ecommerce.dto.session.HandleCartActionRq;
 import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.model.Session;
@@ -38,13 +40,86 @@ public class SessionServiceImpl implements SessionService {
   private SessionProductRepository spRepository;
 
   @Override
+  @Transactional
   public ResponseMessage<Void> deleteFromCart(RequestMessage<DeleteFromCartRq> request) {
-    return null;
+    DeleteFromCartRq input = request.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    Date now = new Date();
+    try {
+      // get product
+      Product product;
+      Optional<Product> pd = productRepository.findById(Long.valueOf(input.getProductId()));
+      Inventory inventory;
+      Optional<Inventory> inv = inventoryRepository.findById(Long.valueOf(input.getProductId()));
+      if (pd.isEmpty() || inv.isEmpty()) {
+        throw new Exception("Product/Inventory not found");
+      }
+      product = pd.get();
+      inventory = inv.get();
+      // get session
+      Session session;
+      Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
+      if (ss.isEmpty()) {
+        throw new Exception("Session not found");
+      }
+      session = ss.get();
+      deleteSingleProductFromCart(session, product, inventory);
+      session.setUpdatedAt(now);
+
+      sessionRepository.save(session);
+      inventoryRepository.save(inventory);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
   }
 
   @Override
+  @Transactional
   public ResponseMessage<Void> deleteFromCartBatch(RequestMessage<DeleteFromCartBatchRq> request) {
-    return null;
+    DeleteFromCartBatchRq input = request.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    Date now = new Date();
+    try {
+      // get session
+      Session session;
+      Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
+      if (ss.isEmpty()) {
+        throw new Exception("Session not found");
+      }
+      session = ss.get();
+      for (String productId : input.getProducts()) {
+        // get product
+        Product product;
+        Optional<Product> pd = productRepository.findById(Long.valueOf(productId));
+        Inventory inventory;
+        Optional<Inventory> inv = inventoryRepository.findById(Long.valueOf(productId));
+        if (pd.isEmpty() || inv.isEmpty()) {
+          throw new Exception("Product/Inventory not found");
+        }
+        product = pd.get();
+        inventory = inv.get();
+        deleteSingleProductFromCart(session, product, inventory);
+        session.setUpdatedAt(now);
+        sessionRepository.save(session);
+        inventoryRepository.save(inventory);
+      }
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
   }
 
   @Override
@@ -73,7 +148,7 @@ public class SessionServiceImpl implements SessionService {
         throw new Exception("Session not found");
       }
       session = ss.get();
-      // add product to session
+      // session-product
       SessionProduct sp;
       SessionProductKey spKey = new SessionProductKey(session.getId(), product.getId());
       Optional<SessionProduct> spOpt = spRepository.findById(spKey);
@@ -89,18 +164,16 @@ public class SessionServiceImpl implements SessionService {
       }
       // UPDATE when product in cart
       else if (spOpt.isPresent() && action.equals(Constants.CART_ACTIONS.UPDATE)) {
-        System.out.println(input.getQuantity());
         sp = spOpt.get();
-        updateCart(sp, session, inventory, input.getQuantity(), now);
+        updateCart(sp, session, product, inventory, input.getQuantity(), now);
         status.setMessage("Updated quantity in cart");
       }
       // ADD when product in cart
       else if (spOpt.isPresent() && action.equals(Constants.CART_ACTIONS.ADD)) {
         sp = spOpt.get();
-        updateCart(sp, session, inventory, sp.getCount() + input.getQuantity(), now);
+        updateCart(sp, session, product, inventory, sp.getCount() + input.getQuantity(), now);
         status.setMessage("Updated quantity in cart");
-      }
-      else {
+      } else {
         throw new Exception("Invalid cart action");
       }
       // commit
@@ -108,8 +181,7 @@ public class SessionServiceImpl implements SessionService {
       sessionRepository.save(session);
       productRepository.save(product);
       inventoryRepository.save(inventory);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
@@ -120,8 +192,10 @@ public class SessionServiceImpl implements SessionService {
     return rs;
   }
 
-  @Transactional
-  public void addToCart(SessionProduct sp, SessionProductKey spKey, Session session, Product product, Inventory inventory, int quantity, Date now) {
+  public void addToCart(SessionProduct sp, SessionProductKey spKey, Session session, Product product, Inventory inventory, int quantity, Date now) throws Exception {
+    if (quantity > inventory.getInStockCount()) {
+      throw new Exception("In stock limit exceeded!");
+    }
     sp.setId(spKey);
     sp.setSession(session);
     sp.setProduct(product);
@@ -130,15 +204,34 @@ public class SessionServiceImpl implements SessionService {
     product.getSessionProducts().add(sp);
     session.getSessionProducts().add(sp);
     session.setUpdatedAt(now);
+    session.setTotalAmount(session.getTotalAmount() + product.getPrice() * quantity);
     // update Inventory
     inventory.setInSessionHolding(inventory.getInSessionHolding() + quantity);
   }
 
   @Transactional
-  public void updateCart(SessionProduct sp, Session session, Inventory inventory, int quantity, Date now) {
+  public void updateCart(SessionProduct sp, Session session, Product product, Inventory inventory, int quantity, Date now) throws Exception {
     int diff = quantity - sp.getCount();
+    if (diff > inventory.getInStockCount()) {
+      throw new Exception("In stock limit exceeded!");
+    }
     sp.setCount(quantity);
     inventory.setInSessionHolding(inventory.getInSessionHolding() + diff);
+    session.setTotalAmount(session.getTotalAmount() + diff * product.getPrice());
     session.setUpdatedAt(now);
+  }
+
+  @Transactional
+  public void deleteSingleProductFromCart(Session session, Product product, Inventory inventory) throws Exception {
+    // session-product
+    SessionProduct sp;
+    SessionProductKey spKey = new SessionProductKey(session.getId(), product.getId());
+    Optional<SessionProduct> spOpt = spRepository.findById(spKey);
+    if (spOpt.isEmpty()) throw new Exception("Product not in session");
+    sp = spOpt.get();
+    int count = sp.getCount();
+    session.setTotalAmount(session.getTotalAmount() - count * product.getPrice());
+    inventory.setInSessionHolding(inventory.getInSessionHolding() - count);
+    spRepository.delete(sp);
   }
 }

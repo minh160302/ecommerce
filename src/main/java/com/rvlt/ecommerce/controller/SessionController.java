@@ -30,13 +30,13 @@ public class SessionController {
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
-  @DeleteMapping("")
+  @DeleteMapping("/delete-from-cart/single")
   public ResponseEntity<ResponseMessage<Void>> deleteFromCart(@RequestBody RequestMessage<DeleteFromCartRq> request) {
     ResponseMessage<Void> res = sessionService.deleteFromCart(request);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
-  @DeleteMapping("/batch")
+  @DeleteMapping("/delete-from-cart/batch")
   public ResponseEntity<ResponseMessage<Void>> deleteFromCartBatch(@RequestBody RequestMessage<DeleteFromCartBatchRq> request) {
     ResponseMessage<Void> res = sessionService.deleteFromCartBatch(request);
     return new ResponseEntity<>(res, HttpStatus.OK);
