@@ -18,4 +18,9 @@ public class Constants {
     public static final String DELIVERED = "DELIVERED";
     public static final String CANCELLED = "CANCELLED";
   }
+
+  public static final class CART_ACTIONS {
+    public static final String ADD = "ADD";
+    public static final String UPDATE = "UPDATE";
+  }
 }

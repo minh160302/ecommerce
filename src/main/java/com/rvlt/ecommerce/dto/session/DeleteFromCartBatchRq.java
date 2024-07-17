@@ -10,6 +10,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class DeleteFromCartBatchRq {
-    private Long sessionId;
-    private List<DeleteFromCartRq> products;
+    private String sessionId;
+    private List<String> products;
 }
