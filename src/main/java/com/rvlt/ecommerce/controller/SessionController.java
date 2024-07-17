@@ -1,11 +1,9 @@
 package com.rvlt.ecommerce.controller;
 
+import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.session.AddToCartRq;
-import com.rvlt.ecommerce.dto.session.DeleteFromCartBatchRq;
-import com.rvlt.ecommerce.dto.session.DeleteFromCartRq;
-import com.rvlt.ecommerce.dto.session.UpdateCountRq;
+import com.rvlt.ecommerce.dto.session.*;
 import com.rvlt.ecommerce.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,14 +17,16 @@ public class SessionController {
   private SessionService sessionService;
 
   @PostMapping("/add-to-cart")
-  public ResponseEntity<ResponseMessage<Void>> addToCart(@RequestBody RequestMessage<AddToCartRq> request) {
-    ResponseMessage<Void> res = sessionService.addToCart(request);
+  public ResponseEntity<ResponseMessage<Void>> addToCart(@RequestBody RequestMessage<HandleCartActionRq> request) {
+    request.getData().setAction(Constants.CART_ACTIONS.ADD);
+    ResponseMessage<Void> res = sessionService.handleCartAction(request);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
   @PostMapping("/update-cart")
-  public ResponseEntity<ResponseMessage<Void>> updateProductCount(@RequestBody RequestMessage<UpdateCountRq> request) {
-    ResponseMessage<Void> res = sessionService.updateProductCount(request);
+  public ResponseEntity<ResponseMessage<Void>> updateCart(@RequestBody RequestMessage<HandleCartActionRq> request) {
+    request.getData().setAction(Constants.CART_ACTIONS.UPDATE);
+    ResponseMessage<Void> res = sessionService.handleCartAction(request);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
