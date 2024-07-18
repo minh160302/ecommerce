@@ -91,6 +91,15 @@ public class OrderServiceImpl implements OrderService {
     try {
       Date now = new Date();
       User currentUser = this.submitOrderAction(request);
+      /**
+       * @apiNote by Minh
+       * - request to payment api here.
+       * - Order is considered as PROCESSING if and only if payment succeeded
+       * - idea:
+       *    - after payment made, some available order status:
+       *        - PAYMENT_PROCESSING, PAYMENT_APPROVED, PAYMENT_REJECTED
+       *        - handle appropriately for each status (later)
+       */
       this.afterOrderSubmitAction(currentUser, now);
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
