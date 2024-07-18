@@ -85,8 +85,8 @@ public class ProductServiceImpl implements ProductService {
           product.setPrice(newPrice);
           productRepository.save(product);
 
-          // get list of sessionProduct and update related sessions total_Amount
-          List<SessionProduct> sessionProducts = sessionProductRepository.findByProductId(product.getId());
+          // get list of sessionProduct (in ACTIVE session only) and update related sessions total_Amount
+          List<SessionProduct> sessionProducts = sessionProductRepository.findActiveByProductId(product.getId());
           for (SessionProduct sp : sessionProducts) {
             Session session = sp.getSession();
             int count = sp.getCount();

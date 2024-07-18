@@ -29,7 +29,7 @@ from inventories;
 
 -- sessions
 insert into sessions(status, total_amount, created_at, updated_at, user_id)
-select 'INACTIVE', 0.0, current_timestamp, NULL, id
+select 'ACTIVE', 0.0, current_timestamp, NULL, id
 from users;
 
 

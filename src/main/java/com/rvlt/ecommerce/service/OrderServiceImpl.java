@@ -8,10 +8,7 @@ import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.*;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
-import com.rvlt.ecommerce.repository.InventoryRepository;
-import com.rvlt.ecommerce.repository.OrderRepository;
-import com.rvlt.ecommerce.repository.ProductRepository;
-import com.rvlt.ecommerce.repository.SessionRepository;
+import com.rvlt.ecommerce.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -34,6 +33,9 @@ public class OrderServiceImpl implements OrderService {
 
   @Autowired
   private InventoryRepository inventoryRepository;
+
+  @Autowired
+  private UserRepository userRepository;
 
   @Override
   public ResponseMessage<Order> getOrderById(Long id) {
@@ -114,10 +116,22 @@ public class OrderServiceImpl implements OrderService {
 
   @Transactional
   public User submitOrderAction(SubmitOrderRq request) throws Exception {
-    Long sessionId = Long.valueOf(request.getSessionId());
-    Optional<Order> orderOpt = orderRepository.findById(sessionId);
-    Optional<Session> sessionOpt = sessionRepository.findById(sessionId);
-    if (orderOpt.isPresent() && sessionOpt.isPresent()) {
+    Long userId = Long.valueOf(request.getUserId());
+    Optional<User> userOpt = userRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+      throw new Exception("User not found: " + userId);
+    }
+    List<Session> activeSessions = sessionRepository.findActiveSessionByUser(userId);
+    if (activeSessions.size() != 1) {
+      throw new Exception("Invalid database entity: Session");
+    }
+    Session session = activeSessions.get(0);
+    Set<SessionProduct> spList = session.getSessionProducts();
+    if (spList.isEmpty()) {
+      throw new Exception("Invalid order submission: Empty cart!");
+    }
+    Optional<Order> orderOpt = orderRepository.findById(session.getId());
+    if (orderOpt.isPresent()) {
       Date now = new Date();
       // order
       Order order = orderOpt.get();
@@ -125,11 +139,10 @@ public class OrderServiceImpl implements OrderService {
       order.setSubmitted_at(now);
       order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submited_at: " + now + "|");
       // session
-      Session session = sessionOpt.get();
       session.setUpdatedAt(now);
       session.setStatus(Constants.SESSION_STATUS.INACTIVE);
       // product
-      for (SessionProduct sp : session.getSessionProducts()) {
+      for (SessionProduct sp : spList) {
         int diff = sp.getCount();
         Product product = sp.getProduct();
         Long productId = product.getId();
@@ -155,7 +168,7 @@ public class OrderServiceImpl implements OrderService {
       orderRepository.save(order);
       return session.getUser();
     } else {
-      throw new Exception("Entity not found. Failure in database.");
+      throw new Exception("Failure in database: Order not found " + session.getId());
     }
   }
 

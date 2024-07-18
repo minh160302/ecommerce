@@ -34,4 +34,10 @@ public class OrderController {
     ResponseMessage<Void> res = orderService.submitOrder(rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
+
+  /**
+   * cancel order:
+   *    - check whether users submit their own orders
+   *    - whether the order is ACTIVE
+   */
 }

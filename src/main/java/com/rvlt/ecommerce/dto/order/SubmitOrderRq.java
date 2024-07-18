@@ -8,5 +8,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class SubmitOrderRq {
-  private String sessionId;
+  private String userId;
 }

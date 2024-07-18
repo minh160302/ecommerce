@@ -75,6 +75,7 @@ CREATE TABLE if not exists sessions_products
     CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE ,
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE ,
     count      INT
+-- ordered_price_per_item
 );
 
 
