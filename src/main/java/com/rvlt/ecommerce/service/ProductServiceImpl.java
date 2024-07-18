@@ -1,9 +1,9 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.model.Session;
@@ -22,95 +22,96 @@ import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private SessionRepository sessionRepository;
-    @Autowired
-    private SessionProductRepository sessionProductRepository;
+  @Autowired
+  private ProductRepository productRepository;
+  @Autowired
+  private SessionRepository sessionRepository;
+  @Autowired
+  private SessionProductRepository sessionProductRepository;
 
-    @Override
-    public ResponseMessage<List<Product>> getAllProduct() {
-        ResponseMessage<List<Product>> rs = new ResponseMessage<>();
-        Status status = new Status();
-        try {
-            List<Product> products = productRepository.findAll();
-            rs.setData(products);
-        } catch (Exception e) {
-            status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-            status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-            status.setMessage(e.getMessage());
-        }
-        rs.setStatus(status);
-        return rs;
+  @Override
+  public ResponseMessage<List<Product>> getAllProduct() {
+    ResponseMessage<List<Product>> rs = new ResponseMessage<>();
+    Status status = new Status();
+    try {
+      List<Product> products = productRepository.findAll();
+      rs.setData(products);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
     }
+    rs.setStatus(status);
+    return rs;
+  }
 
-    @Override
-    public ResponseMessage<Product> getProductById(Long id) {
-        ResponseMessage<Product> rs = new ResponseMessage<>();
-        Status status = new Status();
+  @Override
+  public ResponseMessage<Product> getProductById(Long id) {
+    ResponseMessage<Product> rs = new ResponseMessage<>();
+    Status status = new Status();
 
-        try {
-            Optional<Product> productOpt = productRepository.findById(id);
-            if(productOpt.isPresent()){
-                rs.setData(productOpt.get());
-            } else {
-                status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-                status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-                status.setMessage("Product not found");
-            }
-        } catch (Exception e) {
-            status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-            status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-            status.setMessage(e.getMessage());
-        }
-        rs.setStatus(status);
-        return rs;
+    try {
+      Optional<Product> productOpt = productRepository.findById(id);
+      if (productOpt.isPresent()) {
+        rs.setData(productOpt.get());
+      } else {
+        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+        status.setMessage("Product not found");
+      }
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
     }
+    rs.setStatus(status);
+    return rs;
+  }
 
-    @Override
-    @Transactional
-    public ResponseMessage<Void> updateProduct(Long id, UpdateProductRq request) {
-        ResponseMessage<Void> rs = new ResponseMessage<>();
-        Status status = new Status();
-        try {
-            Optional<Product> productOpt = productRepository.findById(id);
-            if(productOpt.isPresent()){
-                Product product = productOpt.get();
+  @Override
+  @Transactional
+  public ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> rq) {
+    UpdateProductRq request = rq.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    try {
+      Optional<Product> productOpt = productRepository.findById(id);
+      if (productOpt.isPresent()) {
+        Product product = productOpt.get();
 
-                if (request.getPrice() > 0){
-                    double oldPrice = product.getPrice();
-                    double newPrice = request.getPrice();
-                    product.setPrice(newPrice);
-                    productRepository.save(product);
+        if (request.getPrice() > 0) {
+          double oldPrice = product.getPrice();
+          double newPrice = request.getPrice();
+          product.setPrice(newPrice);
+          productRepository.save(product);
 
-                    // get list of sessionProduct and update related sessions total_Amount
-                    List<SessionProduct> sessionProducts = sessionProductRepository.findByProductId(product.getId());
-                    for (SessionProduct sp : sessionProducts) {
-                        Session session = sp.getSession();
-                        int count = sp.getCount();
-                        double priceDifference = (newPrice - oldPrice) * count;
-                        session.setTotalAmount(session.getTotalAmount() + priceDifference);
-                        sessionRepository.save(session);
-                    }
-                } else {
-                    status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
-                    status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-                    status.setMessage("Invalid Price provided");
-                }
-            } else {
-                status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-                status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-                status.setMessage("Product not found");
-            }
-        } catch (Exception e) {
-            status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-            status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-            status.setMessage("Error updating product: " + e.getMessage());
-            // Manually trigger rollback
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+          // get list of sessionProduct and update related sessions total_Amount
+          List<SessionProduct> sessionProducts = sessionProductRepository.findByProductId(product.getId());
+          for (SessionProduct sp : sessionProducts) {
+            Session session = sp.getSession();
+            int count = sp.getCount();
+            double priceDifference = (newPrice - oldPrice) * count;
+            session.setTotalAmount(session.getTotalAmount() + priceDifference);
+            sessionRepository.save(session);
+          }
+        } else {
+          status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
+          status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+          status.setMessage("Invalid Price provided");
         }
-        rs.setStatus(status);
-        return rs;
+      } else {
+        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+        status.setMessage("Product not found");
+      }
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage("Error updating product: " + e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
+    rs.setStatus(status);
+    return rs;
+  }
 }

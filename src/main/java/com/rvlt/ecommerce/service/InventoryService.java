@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.service;
 
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryBatchRq;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
@@ -18,11 +19,11 @@ public interface InventoryService {
 
   ResponseMessage<Void> deleteInventoryById(Long id);
 
-  ResponseMessage<Void> updateInventory(Long id, UpdateInventoryRq request);
+  ResponseMessage<Void> updateInventory(Long id, RequestMessage<UpdateInventoryRq> rq);
 
-  ResponseMessage<Void> importSingleInventory(CreateInventoryRq request);
+  ResponseMessage<Void> importSingleInventory(RequestMessage<CreateInventoryRq> request);
 
-  ResponseMessage<Void> importBatchInventories(CreateInventoryBatchRq request);
+  ResponseMessage<Void> importBatchInventories(RequestMessage<CreateInventoryBatchRq> request);
 
   ResponseMessage<Void> importBatchThroughExcel(InputStream file);
 }

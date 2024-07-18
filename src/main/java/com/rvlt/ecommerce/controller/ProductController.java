@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.controller;
 
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
 import com.rvlt.ecommerce.model.Product;
@@ -30,8 +31,8 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<ResponseMessage<Void>> updateProductById(@PathVariable Long productId, @RequestBody UpdateProductRq request){
-        ResponseMessage<Void> res = productService.updateProduct(productId, request);
+    public ResponseEntity<ResponseMessage<Void>> updateProductById(@PathVariable Long productId, @RequestBody RequestMessage<UpdateProductRq> rq){
+        ResponseMessage<Void> res = productService.updateProduct(productId, rq);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 }

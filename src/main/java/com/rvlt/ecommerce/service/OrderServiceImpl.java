@@ -1,6 +1,7 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
@@ -83,7 +84,8 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> submitOrder(SubmitOrderRq request) {
+  public ResponseMessage<Void> submitOrder(RequestMessage<SubmitOrderRq> rq) {
+    SubmitOrderRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -112,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
       Order order = orderOpt.get();
       order.setStatus(Constants.ORDER_STATUS.PROCESSING);
       order.setSubmitted_at(now);
-      order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submited_at: " + now);
+      order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submited_at: " + now + "|");
       // session
       Session session = sessionOpt.get();
       session.setUpdatedAt(now);
@@ -137,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
           inventoryRepository.save(inventory);
           productRepository.save(product);
         } else {
-          throw new Exception("Entity not found. Failure in database.");
+          throw new Exception("Failure in database: Entity not found.");
         }
       }
       sessionRepository.save(session);

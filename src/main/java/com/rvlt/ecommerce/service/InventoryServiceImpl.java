@@ -1,6 +1,7 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryBatchRq;
@@ -10,7 +11,7 @@ import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.repository.InventoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
-import com.rvlt.ecommerce.util.ExcelUtils;
+//import com.rvlt.ecommerce.util.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -95,7 +96,8 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> updateInventory(Long id, UpdateInventoryRq request) {
+  public ResponseMessage<Void> updateInventory(Long id, RequestMessage<UpdateInventoryRq> rq) {
+    UpdateInventoryRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -122,7 +124,8 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> importSingleInventory(CreateInventoryRq request) {
+  public ResponseMessage<Void> importSingleInventory(RequestMessage<CreateInventoryRq> rq) {
+    CreateInventoryRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -145,7 +148,8 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> importBatchInventories(CreateInventoryBatchRq request) {
+  public ResponseMessage<Void> importBatchInventories(RequestMessage<CreateInventoryBatchRq> rq) {
+    CreateInventoryBatchRq request = rq.getData();
     this.aggregateBatchCreateInventory(request);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
@@ -180,8 +184,8 @@ public class InventoryServiceImpl implements InventoryService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
-      CreateInventoryBatchRq batchRequest = ExcelUtils.parseExcelToCreateInventoryBatchRq(file);
-      return importBatchInventories(batchRequest);
+//      CreateInventoryBatchRq batchRequest = ExcelUtils.parseExcelToCreateInventoryBatchRq(file);
+//      return importBatchInventories(batchRequest);
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);

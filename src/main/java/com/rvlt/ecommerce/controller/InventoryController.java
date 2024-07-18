@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.controller;
 
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryBatchRq;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
@@ -36,13 +37,13 @@ public class InventoryController {
   }
 
   @PostMapping("")
-  public ResponseEntity<ResponseMessage<Void>> importSingleInventory(@RequestBody CreateInventoryRq request) {
-      ResponseMessage<Void> res = inventoryService.importSingleInventory(request);
+  public ResponseEntity<ResponseMessage<Void>> importSingleInventory(@RequestBody RequestMessage<CreateInventoryRq> rq) {
+      ResponseMessage<Void> res = inventoryService.importSingleInventory(rq);
       return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
   @PostMapping("/batch")
-  public ResponseEntity<ResponseMessage<Void>> importBatchInventories(@RequestBody CreateInventoryBatchRq request) {
+  public ResponseEntity<ResponseMessage<Void>> importBatchInventories(@RequestBody RequestMessage<CreateInventoryBatchRq> request) {
     ResponseMessage<Void> res = inventoryService.importBatchInventories(request);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
@@ -54,8 +55,8 @@ public class InventoryController {
   }
 
   @PutMapping("/{inventoryId}")
-  public ResponseEntity<ResponseMessage<Void>> updateInventoryById(@PathVariable Long inventoryId, @RequestBody UpdateInventoryRq request) {
-    ResponseMessage<Void> res = inventoryService.updateInventory(inventoryId, request);
+  public ResponseEntity<ResponseMessage<Void>> updateInventoryById(@PathVariable Long inventoryId, @RequestBody RequestMessage<UpdateInventoryRq> rq) {
+    ResponseMessage<Void> res = inventoryService.updateInventory(inventoryId, rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 

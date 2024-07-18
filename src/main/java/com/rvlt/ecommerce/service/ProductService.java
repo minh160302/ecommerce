@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.service;
 
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
@@ -12,5 +13,5 @@ public interface ProductService {
 
     ResponseMessage<Product> getProductById(Long id);
 
-    ResponseMessage<Void> updateProduct(Long id, UpdateProductRq request);
+    ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> request);
 }

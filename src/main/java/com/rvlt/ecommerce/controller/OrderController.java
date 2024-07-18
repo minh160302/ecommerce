@@ -1,5 +1,6 @@
 package com.rvlt.ecommerce.controller;
 
+import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
@@ -29,8 +30,8 @@ public class OrderController {
   }
 
   @PostMapping("/submit")
-  public ResponseEntity<ResponseMessage<Void>> submitOrder(@RequestBody SubmitOrderRq request) {
-    ResponseMessage<Void> res = orderService.submitOrder(request);
+  public ResponseEntity<ResponseMessage<Void>> submitOrder(@RequestBody RequestMessage<SubmitOrderRq> rq) {
+    ResponseMessage<Void> res = orderService.submitOrder(rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 }
