@@ -26,4 +26,14 @@ public class SessionProduct {
 
   @Column(name = "count")
   private int count;
+
+  @Override
+  public String toString() {
+    return "SessionProduct{" +
+            "id=" + id +
+            ", session=" + session +
+            ", product=" + product +
+            ", count=" + count +
+            '}';
+  }
 }

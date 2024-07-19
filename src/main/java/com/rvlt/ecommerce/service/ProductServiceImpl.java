@@ -95,14 +95,10 @@ public class ProductServiceImpl implements ProductService {
             sessionRepository.save(session);
           }
         } else {
-          status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
-          status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-          status.setMessage("Invalid Price provided");
+          throw new Exception("Invalid Price provided");
         }
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Product not found");
+        throw new Exception("Product not found");
       }
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));

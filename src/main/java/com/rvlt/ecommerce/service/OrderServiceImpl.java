@@ -4,6 +4,7 @@ import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
+import com.rvlt.ecommerce.dto.order.CancelOrderRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.*;
@@ -36,6 +37,9 @@ public class OrderServiceImpl implements OrderService {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private SessionProductRepository spRepository;
 
   @Override
   public ResponseMessage<Order> getOrderById(Long id) {
@@ -103,6 +107,45 @@ public class OrderServiceImpl implements OrderService {
        *        - handle appropriately for each status (later)
        */
       this.afterOrderSubmitAction(currentUser, now);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  @Transactional
+  public ResponseMessage<Void> cancelOrder(RequestMessage<CancelOrderRq> rq) {
+    CancelOrderRq request = rq.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    try {
+      // check validity
+      Long userId = Long.valueOf(request.getUserId());
+      Long sessionId = Long.valueOf(request.getSessionId());
+      Optional<User> userOpt = userRepository.findById(userId);
+      if (userOpt.isEmpty()) {
+        throw new Exception("User not found: " + userId);
+      }
+      Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
+      if (sessionOpt.isEmpty()) {
+        throw new Exception("Session not found or not belong to this user.");
+      }
+      Session session = sessionOpt.get();
+      Order order = session.getOrder();
+      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING)) {
+        throw new Exception("Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+      }
+      // cancel order
+      List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
+      System.out.println(spList);
+      // TODO: update counts
+
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
