@@ -138,14 +138,31 @@ public class OrderServiceImpl implements OrderService {
       }
       Session session = sessionOpt.get();
       Order order = session.getOrder();
-      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING)) {
+      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
         throw new Exception("Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
       }
       // cancel order
       List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
-      System.out.println(spList);
-      // TODO: update counts
-
+      // update counts
+      for (SessionProduct sp : spList) {
+        Product product = sp.getProduct();
+        Inventory inventory = product.getInventory();
+        int returnCount = inventory.getInStockCount() + sp.getCount();
+        inventory.setInStockCount(returnCount);
+        inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() - sp.getCount());
+        product.setInStock(returnCount);
+        int newBalance = this.calculateBalance(inventory);
+        inventory.setBalance(newBalance);
+        if (this.calculateBalance(inventory) != 0) {
+          System.out.println("WARNING: Item [" + inventory.getName() + "]'s count does not balance: diff" + inventory.getBalance());
+        }
+        inventoryRepository.save(inventory);
+        productRepository.save(product);
+      }
+      order.setStatus(Constants.ORDER_STATUS.PROCESSING_CANCEL);
+      orderRepository.save(order);
+      // TODO: 1. more actions on order cancel
+      // TODO: 2. When cancel order, inStock does not update count immediately, as items need time to return to inventory
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -178,7 +195,7 @@ public class OrderServiceImpl implements OrderService {
       Date now = new Date();
       // order
       Order order = orderOpt.get();
-      order.setStatus(Constants.ORDER_STATUS.PROCESSING);
+      order.setStatus(Constants.ORDER_STATUS.PROCESSING_SUBMIT);
       order.setSubmitted_at(now);
       order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submited_at: " + now + "|");
       // session
@@ -194,9 +211,10 @@ public class OrderServiceImpl implements OrderService {
           Inventory inventory = invenOpt.get();
           inventory.setInStockCount(inventory.getInStockCount() - diff);
           inventory.setInSessionHolding(inventory.getInSessionHolding() - diff);
-          inventory.setProcessingCount(inventory.getProcessingCount() + diff);
-          inventory.setBalance(inventory.getTotalCount() - (inventory.getInStockCount() + inventory.getProcessingCount() + inventory.getDeliveredCount()));
-          if (inventory.getBalance() != 0) {
+          inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() + diff);
+          int newBalance = this.calculateBalance(inventory);
+          inventory.setBalance(newBalance);
+          if (this.calculateBalance(inventory) != 0) {
             System.out.println("WARNING: Item count does not balance: diff" + inventory.getBalance());
           }
           product.setInStock(product.getInStock() - diff);
@@ -232,5 +250,12 @@ public class OrderServiceImpl implements OrderService {
     order.setHistory("");
     order.setSession(session);
     orderRepository.save(order);
+  }
+
+  private int calculateBalance(Inventory iv) {
+    int t1 = iv.getInStockCount() + iv.getProcessingSubmitCount() + iv.getDeliveredCount() + iv.getDeliveryInProgressCount()
+            + iv.getProcessingCancelCount() + iv.getCancelInProgressCount() + iv.getCancelledCount() + iv.getCancelFailedCount()
+            + iv.getReturnedCount() + iv.getReturnInProgressCount() + iv.getReturnInProgressCount() + iv.getReturnFailedCount();
+    return iv.getTotalCount() - t1;
   }
 }

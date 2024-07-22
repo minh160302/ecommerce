@@ -13,21 +13,32 @@ CREATE TABLE if not exists users
 -- in_session_holding: might be using later
 CREATE TABLE if not exists inventories
 (
-    id                 BIGSERIAL PRIMARY KEY,
-    name               VARCHAR(255) NOT NULL UNIQUE,
-    total_count        INT,
-    in_stock_count     INT,
-    processing_count   INT,
-    delivered_count    INT,
-    in_session_holding INT,
-    balance            INT
+    id                         BIGSERIAL PRIMARY KEY,
+    name                       VARCHAR(255) NOT NULL UNIQUE,
+    total_count                INT,
+    in_stock_count             INT,
+    processing_submit_count    INT,
+    delivery_in_progress_count INT,
+    delivered_count            INT,
+    processing_cancel_count    INT,
+    cancelled_count            INT,
+    cancel_in_progress_count   INT,
+    returned_count             INT,
+    return_in_progress_count   INT,
+
+    --- not important column
+    delivery_failed            INT,
+    return_failed              INT,
+    cancel_failed              INT,
+    in_session_holding         INT,
+    balance                    INT
 );
 
 
 CREATE TABLE if not exists products
 (
     id       BIGSERIAL PRIMARY KEY references inventories (id) ON DELETE CASCADE,
-    name     VARCHAR(255) NOT NULL UNIQUE ,
+    name     VARCHAR(255) NOT NULL UNIQUE,
     in_stock INT,
     price    NUMERIC(10, 2)
 );
@@ -48,7 +59,7 @@ CREATE TABLE if not exists sessions
 CREATE TABLE if not exists orders
 (
     id           BIGSERIAL PRIMARY KEY references sessions (id) ON DELETE CASCADE,
-    status       VARCHAR(255) NOT NULL, -- NOT SUBMITTED/PROCESSING/IN_PROGRESS/DELIVERED/CANCELLED
+    status       VARCHAR(255) NOT NULL, -- NOT SUBMITTED/PROCESSING_SUBMIT/DELIVERY_IN_PROGRESS/DELIVERED/DELIVERY_FAILED/PROCESSING_CANCEL/RETURN_IN_PROGRESS
     created_at   TIMESTAMP    NOT NULL,
     submitted_at TIMESTAMP,
     history      VARCHAR(255)           -- update history
@@ -72,8 +83,8 @@ CREATE TABLE if not exists sessions_products
 (
     session_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
-    CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE ,
-    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE ,
+    CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     count      INT
 -- ordered_price_per_item
 );
