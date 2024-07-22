@@ -7,6 +7,7 @@ import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.model.Inventory;
 import org.apache.coyote.Response;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -25,5 +26,5 @@ public interface InventoryService {
 
   ResponseMessage<Void> importBatchInventories(RequestMessage<CreateInventoryBatchRq> request);
 
-  ResponseMessage<Void> importBatchThroughExcel(InputStream file);
+  ResponseMessage<Void> importBatchThroughExcel(MultipartFile file);
 }

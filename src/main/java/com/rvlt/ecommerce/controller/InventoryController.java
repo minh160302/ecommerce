@@ -7,6 +7,7 @@ import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
 import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.service.InventoryService;
+import org.apache.coyote.Response;
 import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,12 @@ public class InventoryController {
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
+  @PostMapping(value = "/import-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<ResponseMessage<Void>> importBatchExcel(@RequestParam("file") MultipartFile file)  {
+    ResponseMessage<Void> res = inventoryService.importBatchThroughExcel(file);
+    return new ResponseEntity<>(res, HttpStatus.OK);
+  }
+
   @DeleteMapping("/{inventoryId}")
   public ResponseEntity<ResponseMessage<Void>> deleteInventoryById(@PathVariable Long inventoryId) {
     ResponseMessage<Void> res = inventoryService.deleteInventoryById(inventoryId);
@@ -58,15 +65,5 @@ public class InventoryController {
   public ResponseEntity<ResponseMessage<Void>> updateInventoryById(@PathVariable Long inventoryId, @RequestBody RequestMessage<UpdateInventoryRq> rq) {
     ResponseMessage<Void> res = inventoryService.updateInventory(inventoryId, rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
-  }
-
-  @PostMapping(value = "/import-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<?> importInventoryFromExcel(@RequestParam("file") MultipartFile file) {
-    try {
-      ResponseMessage<Void> response = inventoryService.importBatchThroughExcel(file.getInputStream());
-      return ResponseEntity.ok(response);
-    } catch (IOException e) {
-      return ResponseEntity.badRequest().body("Error reading file: " + e.getMessage());
-    }
   }
 }
