@@ -42,6 +42,7 @@ public class ExcelUtils {
         }
         batch.setInventories(inventories);
         toReturn.setData(batch);
+        // should change to String Date
         toReturn.setTime(new Date());
         return toReturn;
     }

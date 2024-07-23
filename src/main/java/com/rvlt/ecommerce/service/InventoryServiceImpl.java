@@ -161,9 +161,7 @@ public class InventoryServiceImpl implements InventoryService {
         throw new Exception("Import too many inventories at once.");
       }
       for (CreateInventoryRq inventoryRq : request.getInventories()) {
-        // problem at findByName, it only finds all existing
         Optional<Inventory> invOpt = inventoryRepository.findByName(inventoryRq.getName());
-        System.out.println(invOpt.isPresent());
         if (invOpt.isPresent()) {
           Inventory inventory = invOpt.get();
           updateExistingInventory(inventory, inventoryRq);
@@ -192,7 +190,6 @@ public class InventoryServiceImpl implements InventoryService {
     try {
       InputStream inputStream = file.getInputStream();
       RequestMessage<CreateInventoryBatchRq> batchRequest = ExcelUtils.parseExcelToBatchRequest(inputStream);
-      // import batch sai, aggregate method do arithmetic (?)
       importBatchInventories(batchRequest);
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
@@ -224,7 +221,6 @@ public class InventoryServiceImpl implements InventoryService {
     product.setPrice(-1);
     product.setInStock(inventory.getInStockCount());
     product.setInventory(inventory);
-    inventory.setProduct(product);
 
     inventoryRepository.save(inventory);
     productRepository.save(product);
