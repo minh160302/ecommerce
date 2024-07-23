@@ -4,7 +4,7 @@ import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.order.CancelOrderRq;
+import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.*;
@@ -120,8 +120,8 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> cancelOrder(RequestMessage<CancelOrderRq> rq) {
-    CancelOrderRq request = rq.getData();
+  public ResponseMessage<Void> cancelOrder(RequestMessage<OrderActionRq> rq) {
+    OrderActionRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -174,6 +174,105 @@ public class OrderServiceImpl implements OrderService {
     return rs;
   }
 
+  // TODO: only call this when delivery service is ready
+  @Override
+  @Transactional
+  public ResponseMessage<Void> initDeliverOrder(RequestMessage<OrderActionRq> rq) {
+    OrderActionRq request = rq.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    Date now = new Date();
+    try {
+      // check validity
+      Long userId = Long.valueOf(request.getUserId());
+      Long sessionId = Long.valueOf(request.getSessionId());
+      Optional<User> userOpt = userRepository.findById(userId);
+      if (userOpt.isEmpty()) {
+        throw new Exception("User not found: " + userId);
+      }
+      Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
+      if (sessionOpt.isEmpty()) {
+        throw new Exception("Session not found or not belong to this user.");
+      }
+      Session session = sessionOpt.get();
+      Order order = session.getOrder();
+      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
+        throw new Exception("Invalid session/order status to process. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+      }
+      // process order
+      List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
+      // update counts
+      for (SessionProduct sp : spList) {
+        Inventory inventory = sp.getProduct().getInventory();
+        int cnt = sp.getCount();
+        inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() - cnt);
+        inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() + cnt);
+        inventoryRepository.save(inventory);
+      }
+      order.setStatus(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS);
+      String currentHist = order.getHistory();
+      order.setHistory(currentHist + " | " + "init_delivery_at: " + now);
+      orderRepository.save(order);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  @Transactional
+  public ResponseMessage<Void> receiveOrder(RequestMessage<OrderActionRq> rq) {
+    OrderActionRq request = rq.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    Date now = new Date();
+    try {
+      // check validity
+      Long userId = Long.valueOf(request.getUserId());
+      Long sessionId = Long.valueOf(request.getSessionId());
+      Optional<User> userOpt = userRepository.findById(userId);
+      if (userOpt.isEmpty()) {
+        throw new Exception("User not found: " + userId);
+      }
+      Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
+      if (sessionOpt.isEmpty()) {
+        throw new Exception("Session not found or not belong to this user.");
+      }
+      Session session = sessionOpt.get();
+      Order order = session.getOrder();
+      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS)) {
+        throw new Exception("Invalid session/order status on order receive. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+      }
+      // on order receive
+      List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
+      // update counts
+      for (SessionProduct sp : spList) {
+        Inventory inventory = sp.getProduct().getInventory();
+        int cnt = sp.getCount();
+        inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() - cnt);
+        inventory.setDeliveredCount(inventory.getDeliveredCount() + cnt);
+        inventoryRepository.save(inventory);
+      }
+      order.setStatus(Constants.ORDER_STATUS.DELIVERED);
+      String currentHist = order.getHistory();
+      order.setHistory(currentHist + " | " + "order_received_at: " + now);
+      orderRepository.save(order);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+      // Manually trigger rollback
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
   @Transactional
   public User submitOrderAction(SubmitOrderRq request) throws Exception {
     Long userId = Long.valueOf(request.getUserId());
@@ -197,7 +296,7 @@ public class OrderServiceImpl implements OrderService {
       Order order = orderOpt.get();
       order.setStatus(Constants.ORDER_STATUS.PROCESSING_SUBMIT);
       order.setSubmitted_at(now);
-      order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submited_at: " + now + "|");
+      order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submitted_at: " + now);
       // session
       session.setUpdatedAt(now);
       session.setStatus(Constants.SESSION_STATUS.INACTIVE);
