@@ -9,6 +9,8 @@ import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.*;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
+import com.rvlt.ecommerce.rabbitmq.QueueItem;
+import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
 
   @Autowired
   private SessionProductRepository spRepository;
+
+  @Autowired
+  private RabbitMQProducerService mqProducerService;
 
   @Override
   public ResponseMessage<Order> getOrderById(Long id) {
@@ -268,6 +273,28 @@ public class OrderServiceImpl implements OrderService {
       status.setMessage(e.getMessage());
       // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  public ResponseMessage<Void> testOrderError(RequestMessage<String> rq) {
+    String inventoryId = rq.getData();
+    ResponseMessage<Void> rs = new ResponseMessage<>();
+    Status status = new Status();
+    Date now = new Date();
+    try {
+//      mqProducerService.sendMessage();
+      QueueItem queueItem = new QueueItem();
+      queueItem.setType("submit_order");
+      queueItem.setData(inventoryId);
+      mqProducerService.sendOrderMessage(queueItem);
+    }
+    catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
     return rs;

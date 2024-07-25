@@ -63,4 +63,12 @@ public class OrderController {
   }
 
 
+  /**
+   * Test RabbitMQ on ordering products of insufficient stock
+   */
+  @PostMapping("/test-rabbitmq")
+  public ResponseEntity<ResponseMessage<Void>> testOrderError(@RequestBody RequestMessage<String> rq) {
+    ResponseMessage<Void> res = orderService.testOrderError(rq);
+    return new ResponseEntity<>(res, HttpStatus.OK);
+  }
 }

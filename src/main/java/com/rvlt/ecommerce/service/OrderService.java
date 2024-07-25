@@ -19,4 +19,6 @@ public interface OrderService {
   ResponseMessage<Void> initDeliverOrder(RequestMessage<OrderActionRq> rq);
 
   ResponseMessage<Void> receiveOrder(RequestMessage<OrderActionRq> rq);
+
+  ResponseMessage<Void> testOrderError(RequestMessage<String> rq);
 }
