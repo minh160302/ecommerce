@@ -12,6 +12,7 @@ import com.rvlt.ecommerce.model.composite.SessionProduct;
 import com.rvlt.ecommerce.rabbitmq.QueueItem;
 import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.repository.*;
+import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -100,8 +101,10 @@ public class OrderServiceImpl implements OrderService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
-      Date now = new Date();
-      User currentUser = this.submitOrderAction(request);
+      QueueItem item = new QueueItem();
+      item.setType("submit_order");
+      item.setData(request);
+      mqProducerService.sendOrderMessage(item);
       /**
        * @apiNote by Minh
        * - request to payment api here.
@@ -111,7 +114,6 @@ public class OrderServiceImpl implements OrderService {
        *        - PAYMENT_PROCESSING, PAYMENT_APPROVED, PAYMENT_REJECTED
        *        - handle appropriately for each status (later)
        */
-      this.afterOrderSubmitAction(currentUser, now);
     } catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
@@ -279,27 +281,6 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public ResponseMessage<Void> testOrderError(RequestMessage<String> rq) {
-    String inventoryId = rq.getData();
-    ResponseMessage<Void> rs = new ResponseMessage<>();
-    Status status = new Status();
-    Date now = new Date();
-    try {
-//      mqProducerService.sendMessage();
-      QueueItem queueItem = new QueueItem();
-      queueItem.setType("submit_order");
-      queueItem.setData(inventoryId);
-      mqProducerService.sendOrderMessage(queueItem);
-    }
-    catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      status.setMessage(e.getMessage());
-    }
-    rs.setStatus(status);
-    return rs;
-  }
-
   @Transactional
   public User submitOrderAction(SubmitOrderRq request) throws Exception {
     Long userId = Long.valueOf(request.getUserId());
@@ -335,6 +316,9 @@ public class OrderServiceImpl implements OrderService {
         Optional<Inventory> invenOpt = inventoryRepository.findById(productId);
         if (invenOpt.isPresent()) {
           Inventory inventory = invenOpt.get();
+          if (inventory.getInStockCount() < diff) {
+            throw new AmqpRejectAndDontRequeueException("Insufficient inventory count: id " + inventory.getName() + " amount:" + inventory.getInStockCount());
+          }
           inventory.setInStockCount(inventory.getInStockCount() - diff);
           inventory.setInSessionHolding(inventory.getInSessionHolding() - diff);
           inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() + diff);
@@ -359,6 +343,7 @@ public class OrderServiceImpl implements OrderService {
     }
   }
 
+  @Override
   @Transactional
   public void afterOrderSubmitAction(User user, Date now) {
     // ACTIVE session

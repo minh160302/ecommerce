@@ -1,7 +1,10 @@
 package com.rvlt.ecommerce.rabbitmq;
 
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.RemoteInvocationResult;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,11 +21,14 @@ public class RabbitMQProducerService {
     this.rabbitTemplate = rabbitTemplate;
   }
 
-  public void sendMessage(String message) {
-    rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
-  }
-
-  public void sendOrderMessage(QueueItem queueItem) {
-    rabbitTemplate.convertAndSend(exchangeName, routingKey, queueItem);
+  // sendAndReceive
+  public void sendOrderMessage(QueueItem queueItem) throws AmqpException {
+    RemoteInvocationResult res = rabbitTemplate.convertSendAndReceiveAsType(exchangeName, routingKey, queueItem, new ParameterizedTypeReference<>() {});
+    if (res != null && res.getException() != null) {
+      throw new AmqpException(res.getException());
+    }
+    else if (res != null && res.getValue() != null) {
+      System.out.println("MQ Receiving message: " + res.getValue());
+    }
   }
 }

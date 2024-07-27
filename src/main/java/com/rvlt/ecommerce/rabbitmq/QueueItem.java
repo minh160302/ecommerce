@@ -1,18 +1,14 @@
 package com.rvlt.ecommerce.rabbitmq;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import lombok.*;
 
 @Getter
 @Setter
-@Data
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class QueueItem {
   private String type;
-  private String data;
+  private SubmitOrderRq data;
 
   @Override
   public String toString() {

@@ -6,6 +6,10 @@ import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.Order;
+import com.rvlt.ecommerce.model.User;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 public interface OrderService {
   ResponseMessage<Order> getOrderById(Long id);
@@ -20,5 +24,9 @@ public interface OrderService {
 
   ResponseMessage<Void> receiveOrder(RequestMessage<OrderActionRq> rq);
 
-  ResponseMessage<Void> testOrderError(RequestMessage<String> rq);
+  @Transactional
+  User submitOrderAction(SubmitOrderRq request) throws Exception;
+
+  @Transactional
+  void afterOrderSubmitAction(User user, Date now);
 }

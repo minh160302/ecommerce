@@ -18,4 +18,13 @@ public class Status {
     this.serverStatusCode = Constants.SERVER_STATUS_CODE.SUCCESS;
     this.httpStatusCode = String.valueOf(HttpStatus.OK.value());
   }
+
+  @Override
+  public String toString() {
+    return "Status{" +
+            "httpStatusCode='" + httpStatusCode + '\'' +
+            ", serverStatusCode='" + serverStatusCode + '\'' +
+            ", message='" + message + '\'' +
+            '}';
+  }
 }

@@ -6,6 +6,7 @@ import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.Order;
+import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ public class OrderController {
 
   @PostMapping("/submit")
   public ResponseEntity<ResponseMessage<Void>> submitOrder(@RequestBody RequestMessage<SubmitOrderRq> rq) {
+    System.out.println(">>>>>>>>>" + rq.getData());
     ResponseMessage<Void> res = orderService.submitOrder(rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
@@ -59,16 +61,6 @@ public class OrderController {
   @PostMapping("/cancel")
   public ResponseEntity<ResponseMessage<Void>> cancelOrder(@RequestBody RequestMessage<OrderActionRq> rq) {
     ResponseMessage<Void> res = orderService.cancelOrder(rq);
-    return new ResponseEntity<>(res, HttpStatus.OK);
-  }
-
-
-  /**
-   * Test RabbitMQ on ordering products of insufficient stock
-   */
-  @PostMapping("/test-rabbitmq")
-  public ResponseEntity<ResponseMessage<Void>> testOrderError(@RequestBody RequestMessage<String> rq) {
-    ResponseMessage<Void> res = orderService.testOrderError(rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 }
