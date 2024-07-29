@@ -2,10 +2,14 @@ package com.rvlt.ecommerce.service;
 
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.order.CancelOrderRq;
+import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.Order;
+import com.rvlt.ecommerce.model.User;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 public interface OrderService {
   ResponseMessage<Order> getOrderById(Long id);
@@ -14,5 +18,15 @@ public interface OrderService {
 
   ResponseMessage<Void> submitOrder(RequestMessage<SubmitOrderRq> rq);
 
-  ResponseMessage<Void> cancelOrder(RequestMessage<CancelOrderRq> rq);
+  ResponseMessage<Void> cancelOrder(RequestMessage<OrderActionRq> rq);
+
+  ResponseMessage<Void> initDeliverOrder(RequestMessage<OrderActionRq> rq);
+
+  ResponseMessage<Void> receiveOrder(RequestMessage<OrderActionRq> rq);
+
+  @Transactional
+  User submitOrderAction(SubmitOrderRq request) throws Exception;
+
+  @Transactional
+  void afterOrderSubmitAction(User user, Date now);
 }

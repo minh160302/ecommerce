@@ -162,7 +162,7 @@ public class InventoryServiceImpl implements InventoryService {
         throw new Exception("Import too many inventories at once.");
       }
       for (CreateInventoryRq inventoryRq : request.getInventories()) {
-        Optional<Inventory> invOpt = inventoryRepository.findByName(inventoryRq.getName());
+        Optional<Inventory> invOpt = inventoryRepository.findByNameIgnoreCase(inventoryRq.getName());
         if (invOpt.isPresent()) {
           Inventory inventory = invOpt.get();
           updateExistingInventory(inventory, inventoryRq);
@@ -190,7 +190,6 @@ public class InventoryServiceImpl implements InventoryService {
     Status status = new Status();
     try {
       ExcelUtils.validateExcelFile(file);
-
       InputStream inputStream = file.getInputStream();
       RequestMessage<CreateInventoryBatchRq> batchRequest = ExcelUtils.parseExcelToBatchRequest(inputStream);
       importBatchInventories(batchRequest);

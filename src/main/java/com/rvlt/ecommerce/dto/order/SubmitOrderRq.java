@@ -9,4 +9,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class SubmitOrderRq {
   private String userId;
+
+  public SubmitOrderRq(String userId) {
+    this.userId = userId;
+  }
+
 }

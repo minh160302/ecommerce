@@ -2,10 +2,11 @@ package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.order.CancelOrderRq;
+import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.Order;
+import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,23 @@ public class OrderController {
 
   @PostMapping("/submit")
   public ResponseEntity<ResponseMessage<Void>> submitOrder(@RequestBody RequestMessage<SubmitOrderRq> rq) {
+    System.out.println(">>>>>>>>>" + rq.getData());
     ResponseMessage<Void> res = orderService.submitOrder(rq);
+    return new ResponseEntity<>(res, HttpStatus.OK);
+  }
+
+  /** init order delivery complete: PROCESSING_SUBMIT -> DELIVERY_IN_PROGRESS **/
+  @PostMapping("/init-delivery")
+  public ResponseEntity<ResponseMessage<Void>> initDeliverOrder(@RequestBody RequestMessage<OrderActionRq> rq) {
+    ResponseMessage<Void> res = orderService.initDeliverOrder(rq);
+    return new ResponseEntity<>(res, HttpStatus.OK);
+  }
+
+
+  /** deliver order complete: DELIVERY_IN_PROGRESS -> DELIVERED  **/
+  @PostMapping("/receive")
+  public ResponseEntity<ResponseMessage<Void>> receiveOrder(@RequestBody RequestMessage<OrderActionRq> rq) {
+    ResponseMessage<Void> res = orderService.receiveOrder(rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
@@ -42,7 +59,7 @@ public class OrderController {
    *    - whether the order is ACTIVE
    */
   @PostMapping("/cancel")
-  public ResponseEntity<ResponseMessage<Void>> cancelOrder(@RequestBody RequestMessage<CancelOrderRq> rq) {
+  public ResponseEntity<ResponseMessage<Void>> cancelOrder(@RequestBody RequestMessage<OrderActionRq> rq) {
     ResponseMessage<Void> res = orderService.cancelOrder(rq);
     return new ResponseEntity<>(res, HttpStatus.OK);
   }

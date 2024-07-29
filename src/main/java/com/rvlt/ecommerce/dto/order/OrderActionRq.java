@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CancelOrderRq {
+public class OrderActionRq {
   private String sessionId;
   private String userId;
 }

@@ -20,32 +20,58 @@ services:
     command: -p 5432
     restart: unless-stopped
 
-#  pgadmin:
-#    container_name: rvlt_pgadmin_container
-#    image: dpage/pgadmin4
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-minh160302@gmail.com}
-#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-16032002}
-#      PGADMIN_CONFIG_SERVER_MODE: 'False'
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: "rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 #    volumes:
-#      - pgadmin:/var/lib/pgadmin
-#    ports:
-#      - "${PGADMIN_PORT:-5051}:80"
-#    networks:
-#      - postgres
-#    restart: unless-stopped
+#      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+#      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=cluster_cookie
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    networks:
+      - rabbitmq
+    restart: unless-stopped
 
-#  cache:
-#    image: "redis"
-#    ports:
-#      - "6379:6379"
-#    environment:
-#      - ALLOW_EMPTY_PASSWORD=yes
-#      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    volumes:
+      - ./src/main/resources/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - ./data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
 networks:
   postgres:
     driver: bridge
+  rabbitmq:
+    driver: bridge
+  monitoring:
+    driver: bridge
 
 volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
   postgres:
+    driver: local
   pgadmin:
+    driver: local

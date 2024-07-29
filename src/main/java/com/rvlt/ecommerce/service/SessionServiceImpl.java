@@ -144,10 +144,11 @@ public class SessionServiceImpl implements SessionService {
       // get session
       Session session;
       Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
-      if (ss.isEmpty()) {
+      if (ss.isEmpty())
         throw new Exception("Session not found");
-      }
       session = ss.get();
+      if (session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE))
+        throw new Exception("Session inactive");
       // session-product
       SessionProduct sp;
       SessionProductKey spKey = new SessionProductKey(session.getId(), product.getId());

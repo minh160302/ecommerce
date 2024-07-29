@@ -19,8 +19,6 @@ import java.util.List;
 public class ExcelUtils {
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("xlsx", "xls");
 
-
-
     public static RequestMessage<CreateInventoryBatchRq> parseExcelToBatchRequest(InputStream inputStream) throws Exception {
         RequestMessage<CreateInventoryBatchRq> toReturn = new RequestMessage<>();
         CreateInventoryBatchRq batch = new CreateInventoryBatchRq();
@@ -47,7 +45,7 @@ public class ExcelUtils {
         }
         batch.setInventories(inventories);
         toReturn.setData(batch);
-        toReturn.setTime(new Date());
+//        toReturn.setTime(new Date());
         return toReturn;
     }
 
