@@ -16,8 +16,12 @@ public class RequestMessage<T> {
   private Date time;
   private T data;
 
-  public void setTime(Date time) {
-    this.time = time;
+  public void setTime(Date time) throws ParseException {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+    String utcTimeString = sdf.format(time);
+    this.time = sdf.parse(utcTimeString);
   }
 
   public void setTime(String time) throws ParseException {

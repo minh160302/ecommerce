@@ -20,6 +20,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -188,10 +189,18 @@ public class InventoryServiceImpl implements InventoryService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
+      ExcelUtils.validateExcelFile(file);
+
       InputStream inputStream = file.getInputStream();
       RequestMessage<CreateInventoryBatchRq> batchRequest = ExcelUtils.parseExcelToBatchRequest(inputStream);
       importBatchInventories(batchRequest);
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
+      // is this redundant ? Add another separate layer of catch for file validating
+      status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+    }
+      catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage("Excel import failed: " + e.getMessage());

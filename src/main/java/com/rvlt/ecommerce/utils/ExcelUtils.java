@@ -12,10 +12,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class ExcelUtils {
+    private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("xlsx", "xls");
+
+
+
     public static RequestMessage<CreateInventoryBatchRq> parseExcelToBatchRequest(InputStream inputStream) throws Exception {
         RequestMessage<CreateInventoryBatchRq> toReturn = new RequestMessage<>();
         CreateInventoryBatchRq batch = new CreateInventoryBatchRq();
@@ -42,12 +47,29 @@ public class ExcelUtils {
         }
         batch.setInventories(inventories);
         toReturn.setData(batch);
-        // should change to String Date
         toReturn.setTime(new Date());
         return toReturn;
     }
 
-//    public static Boolean isExcelFormat(MultipartFile file) {
-//
-//    }
+    // check for file extension and file HTTP MIME-type
+    public static void validateExcelFile(MultipartFile file) throws IllegalArgumentException {
+        if (!hasExcelExtension(file.getOriginalFilename())) {
+            throw new IllegalArgumentException("Invalid file type. Only Excel files (xlsx, xls) are allowed.");
+        }
+        if (!isExcelContentType(file.getContentType())) {
+            throw new IllegalArgumentException("Invalid file type. Only Excel files are allowed.");
+        }
+    }
+
+    private static Boolean hasExcelExtension(String filename) {
+        return filename != null && ALLOWED_EXTENSIONS.contains(filename.substring(filename.lastIndexOf(".") + 1).toLowerCase());
+    }
+
+    // check for file MIME-type (redundant ?)
+    private static Boolean isExcelContentType(String contentType) {
+        return contentType != null && (
+                contentType.equals("application/vnd.ms-excel") ||
+                        contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        );
+    }
 }
