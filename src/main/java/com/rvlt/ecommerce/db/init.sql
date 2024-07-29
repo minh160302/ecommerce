@@ -43,6 +43,17 @@ CREATE TABLE if not exists products
     price    NUMERIC(10, 2)
 );
 
+CREATE TABLE if not exists categories
+(
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    active      BOOLEAN,
+    UNIQUE(name)
+-- type   VARCHAR: normal/onboarding_sale/xmas_sale/50%-off/black-friday.....
+);
+
+
 -- always only one active session per user (at any given time)
 -- create new session each time the previous session is submitted
 CREATE TABLE if not exists sessions
@@ -72,6 +83,9 @@ Relationships:
 // user - order:               1 to many
   - order - session:            1 to 1
   - product - inventory:        1 to 1
+  - product - category          many to many
+        why category connects to product instead of inventory?
+        The demand to query products' categories is larger than to query inventories'
 
   not necessary
   - order - product:            1 to many
@@ -86,7 +100,17 @@ CREATE TABLE if not exists sessions_products
     CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE,
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     count      INT
--- ordered_price_per_item
+-- ordered_price_per_item???
+);
+
+
+CREATE TABLE if not exists products_categories
+(
+    product_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    PRIMARY KEY (product_id, category_id),
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+    CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
 
 

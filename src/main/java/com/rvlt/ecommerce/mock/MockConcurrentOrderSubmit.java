@@ -19,8 +19,9 @@ public class MockConcurrentOrderSubmit {
   static String mockUrl = "http://localhost:8080";
 
   public static void main(String[] args) throws Exception {
+    long start = System.currentTimeMillis();
     System.out.println("Mock MockConcurrentOrderSubmit START");
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 8; i++) {
       RequestMessage<SubmitOrderRq> rq = new RequestMessage<>();
       Date date = new Date(); // current date and time
       SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -53,5 +54,8 @@ public class MockConcurrentOrderSubmit {
       System.out.println("################ END" + (i + 1) + "###############");
     }
     System.out.println("Mock MockConcurrentOrderSubmit END");
+    long finish = System.currentTimeMillis();
+    long timeElapsed = finish - start;
+    System.out.println("timeElapsed: " + timeElapsed);
   }
 }

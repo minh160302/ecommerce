@@ -105,6 +105,9 @@ public class OrderServiceImpl implements OrderService {
       item.setType("submit_order");
       item.setData(request);
       mqProducerService.sendOrderMessage(item);
+//      User currentUser = this.submitOrderAction(request);
+//      Date now = new Date();
+//      this.afterOrderSubmitAction(currentUser, now);
       /**
        * @apiNote by Minh
        * - request to payment api here.

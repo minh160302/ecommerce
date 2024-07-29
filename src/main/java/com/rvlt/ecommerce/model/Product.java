@@ -1,6 +1,7 @@
 package com.rvlt.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rvlt.ecommerce.model.composite.ProductCategory;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -38,4 +39,8 @@ public class Product {
   @JsonIgnore
   @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
   Set<SessionProduct> sessionProducts;
+
+  @JsonIgnore
+  @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+  Set<ProductCategory> productCategories;
 }

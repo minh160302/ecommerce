@@ -5,9 +5,11 @@ import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
+import com.rvlt.ecommerce.model.Category;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.model.Session;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
+import com.rvlt.ecommerce.repository.CategoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.SessionProductRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
@@ -28,6 +30,8 @@ public class ProductServiceImpl implements ProductService {
   private SessionRepository sessionRepository;
   @Autowired
   private SessionProductRepository sessionProductRepository;
+  @Autowired
+  private CategoryRepository categoryRepository;
 
   @Override
   public ResponseMessage<List<Product>> getAllProduct() {
@@ -106,6 +110,22 @@ public class ProductServiceImpl implements ProductService {
       status.setMessage("Error updating product: " + e.getMessage());
       // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  public ResponseMessage<List<Category>> getProductCategories(Long productId) {
+    ResponseMessage<List<Category>> rs = new ResponseMessage<>();
+    Status status = new Status();
+    try {
+      List<Category> categories = categoryRepository.findCategoriesOfProduct(productId);
+      rs.setData(categories);
+    } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
     return rs;

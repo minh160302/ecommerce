@@ -1,6 +1,7 @@
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 
+
 CREATE TABLE if not exists users
 (
     id         BIGSERIAL PRIMARY KEY,
@@ -46,6 +47,15 @@ CREATE TABLE if not exists products
     price    NUMERIC(10, 2)
 );
 
+CREATE TABLE if not exists categories
+(
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(255) NOT NULL UNIQUE,
+    description VARCHAR(255) NOT NULL,
+    active      BOOLEAN
+);
+
+
 -- always only one active session per user (at any given time)
 -- create new session each time the previous session is submitted
 CREATE TABLE if not exists sessions
@@ -75,6 +85,9 @@ Relationships:
 // user - order:               1 to many
   - order - session:            1 to 1
   - product - inventory:        1 to 1
+  - product - category          many to many
+        why category connects to product instead of inventory?
+        The demand to query products' categories is larger than to query inventories'
 
   not necessary
   - order - product:            1 to many
@@ -89,12 +102,21 @@ CREATE TABLE if not exists sessions_products
     CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES sessions (id) ON DELETE CASCADE,
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     count      INT
--- ordered_price_per_item
+-- ordered_price_per_item???
+);
+
+
+CREATE TABLE if not exists products_categories
+(
+    product_id BIGINT NOT NULL,
+    category_id BIGINT NOT NULL,
+    PRIMARY KEY (product_id, category_id),
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+    CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
 );
 
 
 -- INDEXING
-
 
 
 -- users
@@ -104,6 +126,20 @@ INSERT INTO users(firstname, lastname, dob, email, created_at)
 VALUES ('John2', 'Doe2', '30/09/2003', 'j2@gmail.com', current_timestamp);
 INSERT INTO users(firstname, lastname, dob, email, created_at)
 VALUES ('John3', 'Doe3', '30/09/2003', 'j3@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John4', 'Doe4', '30/09/2003', 'j4@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John5', 'Doe5', '30/09/2003', 'j5@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John6', 'Doe6', '30/09/2003', 'j6@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John7', 'Do7', '30/09/2003', 'j7@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('Joh8', 'Doe8', '30/09/2003', 'j8@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John9', 'Doe9', '30/09/2003', 'j9@gmail.com', current_timestamp);
+INSERT INTO users(firstname, lastname, dob, email, created_at)
+VALUES ('John10', 'Doe10', '30/09/2003', 'j10@gmail.com', current_timestamp);
 
 -- inventories
 insert into inventories(name, total_count, in_stock_count, processing_submit_count, delivery_in_progress_count,
@@ -144,3 +180,23 @@ from users;
 insert into orders(id, status, created_at, history)
 select id, 'NOT_SUBMITTED', current_timestamp, NULL
 from sessions;
+
+
+-- categories
+insert into categories(name, description, active)
+values ('Technology', 'Tech gadgets for techies', true);
+insert into categories(name, description, active)
+values ('Household', 'Household items', true);
+insert into categories(name, description, active)
+values ('Skincare', 'Skincare products', true);
+
+
+--- products-categories
+insert into products_categories(product_id, category_id)
+VALUES (1, 1);
+insert into products_categories(product_id, category_id)
+VALUES (2, 1);
+insert into products_categories(product_id, category_id)
+VALUES (3, 2);
+insert into products_categories(product_id, category_id)
+VALUES (4, 3);
