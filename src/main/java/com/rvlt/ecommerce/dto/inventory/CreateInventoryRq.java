@@ -14,4 +14,5 @@ public class CreateInventoryRq {
 
   private int count;
 //  private String description;
+
 }

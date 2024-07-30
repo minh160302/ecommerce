@@ -11,12 +11,16 @@ import com.rvlt.ecommerce.model.Inventory;
 import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.repository.InventoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
+import com.rvlt.ecommerce.utils.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -148,7 +152,8 @@ public class InventoryServiceImpl implements InventoryService {
   @Transactional
   public ResponseMessage<Void> importBatchInventories(RequestMessage<CreateInventoryBatchRq> rq) {
     CreateInventoryBatchRq request = rq.getData();
-    this.aggregateBatchCreateInventory(request);
+    // this is doing double count addition, somehow
+//    this.aggregateBatchCreateInventory(request);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
@@ -157,12 +162,14 @@ public class InventoryServiceImpl implements InventoryService {
         throw new Exception("Import too many inventories at once.");
       }
       for (CreateInventoryRq inventoryRq : request.getInventories()) {
-        Optional<Inventory> invOpt = inventoryRepository.findByName(inventoryRq.getName());
+        Optional<Inventory> invOpt = inventoryRepository.findByNameIgnoreCase(inventoryRq.getName());
         if (invOpt.isPresent()) {
           Inventory inventory = invOpt.get();
           updateExistingInventory(inventory, inventoryRq);
+          System.out.println("Updated existing inventory: " + inventory.getName());
         } else {
           createNewInventory(inventoryRq);
+          System.out.println("Created new inventory: " + inventoryRq.getName());
         }
       }
     } catch (Exception e) {
@@ -178,13 +185,21 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> importBatchThroughExcel(InputStream file) {
+  public ResponseMessage<Void> importBatchThroughExcel(MultipartFile file) {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
-//      CreateInventoryBatchRq batchRequest = ExcelUtils.parseExcelToCreateInventoryBatchRq(file);
-//      return importBatchInventories(batchRequest);
-    } catch (Exception e) {
+      ExcelUtils.validateExcelFile(file);
+      InputStream inputStream = file.getInputStream();
+      RequestMessage<CreateInventoryBatchRq> batchRequest = ExcelUtils.parseExcelToBatchRequest(inputStream);
+      importBatchInventories(batchRequest);
+    } catch (IllegalStateException e) {
+      // is this redundant ? Add another separate layer of catch for file validating
+      status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+    }
+      catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage("Excel import failed: " + e.getMessage());

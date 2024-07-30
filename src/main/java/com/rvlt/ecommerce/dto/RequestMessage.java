@@ -16,7 +16,14 @@ public class RequestMessage<T> {
   private Date time;
   private T data;
 
-  // expected date format: 2024-07-12T21:40:03.421+00:00
+  // public void setTime(Date time) throws ParseException {
+  //   SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  //   sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+  //   String utcTimeString = sdf.format(time);
+  //   this.time = sdf.parse(utcTimeString);
+  // }
+
   public void setTime(String time) throws ParseException {
 //    final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 //    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));   // This line converts the given date into UTC time zone
