@@ -24,6 +24,7 @@ public class CategoryController {
     return new ResponseEntity<>(res, HttpStatus.OK);
   }
 
+  /** Get all products of a category **/
   @GetMapping("/{categoryId}")
   public ResponseEntity<ResponseMessage<List<Product>>> getCategoryById(@PathVariable("categoryId") String categoryId) {
     ResponseMessage<List<Product>> res = categoryService.getProductsByCategory(categoryId);
