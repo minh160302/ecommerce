@@ -1,7 +1,9 @@
 package com.rvlt.ecommerce.rabbitmq;
 
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter

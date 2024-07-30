@@ -1,7 +1,6 @@
 package com.rvlt.ecommerce.dto.session;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

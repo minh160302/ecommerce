@@ -6,7 +6,6 @@ import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.Order;
-import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

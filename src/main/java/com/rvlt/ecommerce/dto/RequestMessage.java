@@ -5,9 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 @Getter
 @Setter
