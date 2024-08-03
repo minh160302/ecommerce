@@ -123,7 +123,7 @@ CREATE TABLE if not exists products_categories
 );
 
 
-CREATE TABLE if not exists wishlist_products
+CREATE TABLE if not exists wishlist_product
 (
     wishlist_id  BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
@@ -132,6 +132,5 @@ CREATE TABLE if not exists wishlist_products
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
     -- added at time -> order by most recently added
 );
-
 -- INDEXING
 

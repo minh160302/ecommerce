@@ -11,4 +11,13 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
   @Query(value = "select products.* from products_categories left join products on products_categories.product_id = products.id where category_id = ?1", nativeQuery = true)
   List<Product> findProductsInCategory(Long categoryId);
+
+
+  @Query(
+          value = "select p.* from product_view pv " +
+                  "left join products p on pv.product_id = p.id " +
+                  "where pv.user_id = ?1 " +
+                  "order by pv.count desc limit 10;",
+          nativeQuery = true)
+  List<Product> findMostViewedProducts(Long userId);
 }

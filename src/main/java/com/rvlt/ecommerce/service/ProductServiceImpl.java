@@ -13,6 +13,7 @@ import com.rvlt.ecommerce.repository.CategoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.SessionProductRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class ProductServiceImpl implements ProductService {
   private SessionProductRepository sessionProductRepository;
   @Autowired
   private CategoryRepository categoryRepository;
+  @Autowired
+  private ProductViewService productViewService;
 
   @Override
   public ResponseMessage<List<Product>> getAllProduct() {
@@ -50,20 +53,28 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public ResponseMessage<Product> getProductById(Long id) {
+  public ResponseMessage<Product> getProductById(Long id, HttpServletRequest httpServletRequest) {
     ResponseMessage<Product> rs = new ResponseMessage<>();
     Status status = new Status();
 
     try {
+      String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+      if (userIdHeader == null) {
+        throw new Exception("Invalid request header");
+      }
+      Long userId = Long.parseLong(userIdHeader);
       Optional<Product> productOpt = productRepository.findById(id);
       if (productOpt.isPresent()) {
-        rs.setData(productOpt.get());
+        Product product = productOpt.get();
+        rs.setData(product);
+        productViewService.userViewProduct(product, userId);
       } else {
         status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
         status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
         status.setMessage("Product not found");
       }
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
@@ -123,6 +134,28 @@ public class ProductServiceImpl implements ProductService {
       List<Category> categories = categoryRepository.findCategoriesOfProduct(productId);
       rs.setData(categories);
     } catch (Exception e) {
+      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setMessage(e.getMessage());
+    }
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  public ResponseMessage<List<Product>> getPersonalizedProducts(HttpServletRequest httpServletRequest) {
+    ResponseMessage<List<Product>> rs = new ResponseMessage<>();
+    Status status = new Status();
+    try {
+      String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+      if (userIdHeader == null) {
+        throw new Exception("Invalid request header");
+      }
+      Long userId = Long.parseLong(userIdHeader);
+      List<Product> products = productRepository.findMostViewedProducts(userId);
+      rs.setData(products);
+    }
+    catch (Exception e) {
       status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());

@@ -9,6 +9,7 @@ import com.rvlt.ecommerce.model.Product;
 import com.rvlt.ecommerce.model.Wishlist;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.WishlistRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,12 @@ public class WishlistServiceImpl implements WishlistService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> handleWishlistAction(String userId, RequestMessage<HandleWishlistActionRq> rq) {
+  public ResponseMessage<Void> handleWishlistAction(RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
     HandleWishlistActionRq input = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
+      String userId = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
       String productId = input.getProductId();
       Optional<Product> optProduct = productRepository.findById(Long.valueOf(productId));
       if (optProduct.isEmpty()) {

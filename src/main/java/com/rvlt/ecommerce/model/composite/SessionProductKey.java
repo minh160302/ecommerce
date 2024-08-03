@@ -20,8 +20,6 @@ public class SessionProductKey implements Serializable {
 
   // standard constructors, getters, and setters
   // hashcode and equals implementation
-
-
   public SessionProductKey(Long sessionId, Long productId) {
     this.sessionId = sessionId;
     this.productId = productId;

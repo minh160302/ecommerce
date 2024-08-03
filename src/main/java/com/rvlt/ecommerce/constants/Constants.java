@@ -37,4 +37,8 @@ public class Constants {
     public static final String ADD = "ADD";
     public static final String REMOVE = "REMOVE";
   }
+
+  public static final class RVLT {
+    public static final String userIdHeader = "X-RVLT-userId";
+  }
 }

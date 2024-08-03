@@ -136,6 +136,16 @@ CREATE TABLE if not exists wishlist_product
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
 );
 
+
+CREATE TABLE if not exists product_view
+(
+    user_id BIGINT NOT NULL,
+    product_id  BIGINT NOT NULL,
+    count       BIGINT NOT NULL,
+    history     VARCHAR(255)
+-- format: timestamp@count | timestamp@count |  ...
+);
+
 -- INDEXING
 
 
