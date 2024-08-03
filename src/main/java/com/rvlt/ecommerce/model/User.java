@@ -46,4 +46,9 @@ public class User {
   @JsonIgnore
   @OneToMany(mappedBy="user", fetch = FetchType.LAZY)
   private Set<Session> sessions;
+
+  @JsonIgnore
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  private Wishlist wishlist;
+
 }

@@ -49,7 +49,7 @@ CREATE TABLE if not exists categories
     name        VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
     active      BOOLEAN,
-    UNIQUE(name)
+    UNIQUE (name)
 -- type   VARCHAR: normal/onboarding_sale/xmas_sale/50%-off/black-friday.....
 );
 
@@ -76,6 +76,13 @@ CREATE TABLE if not exists orders
     history      VARCHAR(255)           -- update history
 );
 
+
+CREATE TABLE if not exists wishlists
+(
+    id      BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE references users (id) ON DELETE CASCADE
+);
+
 /**
 Relationships:
   - user - session:             1 to many
@@ -86,6 +93,8 @@ Relationships:
   - product - category          many to many
         why category connects to product instead of inventory?
         The demand to query products' categories is larger than to query inventories'
+  - wishlist - user             1 to 1
+  - wishlist - products         1 to many
 
   not necessary
   - order - product:            1 to many
@@ -106,7 +115,7 @@ CREATE TABLE if not exists sessions_products
 
 CREATE TABLE if not exists products_categories
 (
-    product_id BIGINT NOT NULL,
+    product_id  BIGINT NOT NULL,
     category_id BIGINT NOT NULL,
     PRIMARY KEY (product_id, category_id),
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
@@ -114,4 +123,15 @@ CREATE TABLE if not exists products_categories
 );
 
 
+CREATE TABLE if not exists wishlist_products
+(
+    wishlist_id  BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    PRIMARY KEY (wishlist_id, product_id),
+    CONSTRAINT fk_wishlist FOREIGN KEY (wishlist_id) REFERENCES wishlists (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+    -- added at time -> order by most recently added
+);
+
 -- INDEXING
+

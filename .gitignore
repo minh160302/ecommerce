@@ -37,4 +37,5 @@ build/
 ### Custom ###
 data
 src/main/java/com/rvlt/ecommerce/db/all.sql
+src/main/resources/Excel/**
 

@@ -32,4 +32,9 @@ public class Constants {
     public static final String ADD = "ADD";
     public static final String UPDATE = "UPDATE";
   }
+
+  public static final class WISHLIST_ACTIONS {
+    public static final String ADD = "ADD";
+    public static final String REMOVE = "REMOVE";
+  }
 }
