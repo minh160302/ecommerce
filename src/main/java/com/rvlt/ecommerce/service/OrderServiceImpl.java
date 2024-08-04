@@ -12,12 +12,15 @@ import com.rvlt.ecommerce.model.composite.SessionProduct;
 import com.rvlt.ecommerce.rabbitmq.QueueItem;
 import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
@@ -56,13 +59,16 @@ public class OrderServiceImpl implements OrderService {
       if (orderOpt.isPresent()) {
         rs.setData(orderOpt.get());
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Order not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
@@ -81,13 +87,16 @@ public class OrderServiceImpl implements OrderService {
         response.setStatus(order.getStatus());
         rs.setData(response);
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Order not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
@@ -96,18 +105,19 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> submitOrder(RequestMessage<SubmitOrderRq> rq) {
-    SubmitOrderRq request = rq.getData();
+  public ResponseMessage<Void> submitOrder(HttpServletRequest httpServletRequest) {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
+      String userId = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+      if (userId == null || userId.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request headers.");
+      }
+      SubmitOrderRq request = new SubmitOrderRq(userId);
       QueueItem item = new QueueItem();
       item.setType("submit_order");
       item.setData(request);
       mqProducerService.sendOrderMessage(item);
-//      User currentUser = this.submitOrderAction(request);
-//      Date now = new Date();
-//      this.afterOrderSubmitAction(currentUser, now);
       /**
        * @apiNote by Minh
        * - request to payment api here.
@@ -118,10 +128,19 @@ public class OrderServiceImpl implements OrderService {
        *        - handle appropriately for each status (later)
        */
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      }
+      else if (e instanceof AmqpException) {
+        status.setHttpStatusCode(HttpStatus.BAD_REQUEST.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.MQ_ERROR);
+      }
+      else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -140,16 +159,16 @@ public class OrderServiceImpl implements OrderService {
       Long sessionId = Long.valueOf(request.getSessionId());
       Optional<User> userOpt = userRepository.findById(userId);
       if (userOpt.isEmpty()) {
-        throw new Exception("User not found: " + userId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
       }
       Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
       if (sessionOpt.isEmpty()) {
-        throw new Exception("Session not found or not belong to this user.");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
       }
       Session session = sessionOpt.get();
       Order order = session.getOrder();
       if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
-        throw new Exception("Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
       }
       // cancel order
       List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
@@ -174,10 +193,14 @@ public class OrderServiceImpl implements OrderService {
       // TODO: 1. more actions on order cancel
       // TODO: 2. When cancel order, inStock does not update count immediately, as items need time to return to inventory
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -198,16 +221,16 @@ public class OrderServiceImpl implements OrderService {
       Long sessionId = Long.valueOf(request.getSessionId());
       Optional<User> userOpt = userRepository.findById(userId);
       if (userOpt.isEmpty()) {
-        throw new Exception("User not found: " + userId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
       }
       Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
       if (sessionOpt.isEmpty()) {
-        throw new Exception("Session not found or not belong to this user.");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
       }
       Session session = sessionOpt.get();
       Order order = session.getOrder();
       if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
-        throw new Exception("Invalid session/order status to process. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status to process. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
       }
       // process order
       List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
@@ -224,10 +247,14 @@ public class OrderServiceImpl implements OrderService {
       order.setHistory(currentHist + " | " + "init_delivery_at: " + now);
       orderRepository.save(order);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -247,16 +274,16 @@ public class OrderServiceImpl implements OrderService {
       Long sessionId = Long.valueOf(request.getSessionId());
       Optional<User> userOpt = userRepository.findById(userId);
       if (userOpt.isEmpty()) {
-        throw new Exception("User not found: " + userId);
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
       }
       Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
       if (sessionOpt.isEmpty()) {
-        throw new Exception("Session not found or not belong to this user.");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
       }
       Session session = sessionOpt.get();
       Order order = session.getOrder();
       if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS)) {
-        throw new Exception("Invalid session/order status on order receive. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status on order receive. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
       }
       // on order receive
       List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
@@ -273,16 +300,23 @@ public class OrderServiceImpl implements OrderService {
       order.setHistory(currentHist + " | " + "order_received_at: " + now);
       orderRepository.save(order);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
     return rs;
   }
 
+  /**
+   * Indirectly throws error. Don't user ResponseStatusException
+   */
   @Override
   @Transactional
   public User submitOrderAction(SubmitOrderRq request) throws Exception {

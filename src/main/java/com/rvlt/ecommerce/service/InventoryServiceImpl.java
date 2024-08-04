@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class InventoryServiceImpl implements InventoryService {
       List<Inventory> inventoryList = inventoryRepository.findAll();
       rs.setData(inventoryList);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
     }
@@ -57,13 +58,16 @@ public class InventoryServiceImpl implements InventoryService {
       if (invOpt.isPresent()) {
         rs.setData(invOpt.get());
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Inventory not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Inventory not found");
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
@@ -79,15 +83,17 @@ public class InventoryServiceImpl implements InventoryService {
       if (inventoryRepository.existsById(id)) {
         inventoryRepository.deleteById(id);
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Inventory not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Inventory not found");
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -107,15 +113,17 @@ public class InventoryServiceImpl implements InventoryService {
         inventory.setName(request.getName().trim());
         inventoryRepository.save(inventory);
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Inventory not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Inventory not found");
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -136,7 +144,7 @@ public class InventoryServiceImpl implements InventoryService {
         createNewInventory(request);
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
       // Manually trigger rollback
@@ -157,7 +165,7 @@ public class InventoryServiceImpl implements InventoryService {
     try {
       List<CreateInventoryRq> rqList = request.getInventories();
       if (rqList.size() > 20) {
-        throw new Exception("Import too many inventories at once.");
+        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Import too many inventories at once.");
       }
       for (CreateInventoryRq inventoryRq : request.getInventories()) {
         Optional<Inventory> invOpt = inventoryRepository.findByNameIgnoreCase(inventoryRq.getName());
@@ -171,10 +179,14 @@ public class InventoryServiceImpl implements InventoryService {
         }
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage("Batch import failed:" + e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -193,12 +205,11 @@ public class InventoryServiceImpl implements InventoryService {
       importBatchInventories(batchRequest);
     } catch (IllegalStateException e) {
       // is this redundant ? Add another separate layer of catch for file validating
-      status.setHttpStatusCode(String.valueOf(HttpStatus.BAD_REQUEST.value()));
+      status.setHttpStatusCode(HttpStatus.BAD_REQUEST.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
-    }
-      catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+    } catch (Exception e) {
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage("Excel import failed: " + e.getMessage());
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();

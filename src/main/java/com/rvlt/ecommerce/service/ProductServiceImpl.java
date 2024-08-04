@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,8 +45,8 @@ public class ProductServiceImpl implements ProductService {
       List<Product> products = productRepository.findAll();
       rs.setData(products);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
@@ -60,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
     try {
       String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
       if (userIdHeader == null) {
-        throw new Exception("Invalid request header");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request header");
       }
       Long userId = Long.parseLong(userIdHeader);
       Optional<Product> productOpt = productRepository.findById(id);
@@ -69,14 +70,16 @@ public class ProductServiceImpl implements ProductService {
         rs.setData(product);
         productViewService.userViewProduct(product, userId);
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("Product not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
       }
-    }
-    catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+    } catch (Exception e) {
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
@@ -85,16 +88,21 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> rq) {
+  public ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> rq, HttpServletRequest httpServletRequest) {
     UpdateProductRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {
+      String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+      if (userIdHeader == null || !userIdHeader.equals(Constants.RVLT.adminHeader)) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized request header");
+      }
       Optional<Product> productOpt = productRepository.findById(id);
       if (productOpt.isPresent()) {
         Product product = productOpt.get();
 
-        if (request.getPrice() > 0) {
+        double rqPrice = request.getPrice();
+        if (rqPrice > 0) {
           double oldPrice = product.getPrice();
           double newPrice = request.getPrice();
           product.setPrice(newPrice);
@@ -110,14 +118,20 @@ public class ProductServiceImpl implements ProductService {
             sessionRepository.save(session);
           }
         } else {
-          throw new Exception("Invalid Price provided");
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid price provided");
         }
       } else {
-        throw new Exception("Product not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
       }
-    } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+    }
+    catch (Exception e) {
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage("Error updating product: " + e.getMessage());
       // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -134,7 +148,7 @@ public class ProductServiceImpl implements ProductService {
       List<Category> categories = categoryRepository.findCategoriesOfProduct(productId);
       rs.setData(categories);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
     }
@@ -148,16 +162,20 @@ public class ProductServiceImpl implements ProductService {
     Status status = new Status();
     try {
       String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
-      if (userIdHeader == null) {
-        throw new Exception("Invalid request header");
+      if (userIdHeader == null || userIdHeader.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request header");
       }
       Long userId = Long.parseLong(userIdHeader);
       List<Product> products = productRepository.findMostViewedProducts(userId);
       rs.setData(products);
-    }
-    catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+    } catch (Exception e) {
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);

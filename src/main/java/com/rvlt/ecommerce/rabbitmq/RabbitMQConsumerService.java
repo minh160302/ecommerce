@@ -39,7 +39,7 @@ public class RabbitMQConsumerService {
       Date now = new Date();
       orderService.afterOrderSubmitAction(currentUser, now);
     } catch (Exception e) {
-      System.out.println(">>>>>>>>>>" +e.getMessage());
+//      System.out.println(">>>>>>>>>>" +e.getMessage());
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
       throw e;
     }

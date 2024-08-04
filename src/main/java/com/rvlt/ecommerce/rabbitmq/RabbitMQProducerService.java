@@ -6,6 +6,7 @@ import org.springframework.amqp.support.converter.RemoteInvocationResult;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class RabbitMQProducerService {

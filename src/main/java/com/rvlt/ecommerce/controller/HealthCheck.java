@@ -15,7 +15,7 @@ public class HealthCheck {
     ResponseMessage<String> res = new ResponseMessage<>();
     res.setData("OK");
     Status status = new Status();
-    status.setHttpStatusCode(HttpStatus.OK.toString());
+    status.setHttpStatusCode(HttpStatus.OK.value());
     res.setStatus(status);
     res.setStatus(status);
     return res;

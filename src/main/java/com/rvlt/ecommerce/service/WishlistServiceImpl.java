@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class WishlistServiceImpl implements WishlistService {
       String productId = input.getProductId();
       Optional<Product> optProduct = productRepository.findById(Long.valueOf(productId));
       if (optProduct.isEmpty()) {
-        throw new Exception("Invalid request: Product not found");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request: Product not found");
       }
       Product product = optProduct.get();
       List<Wishlist> lst = wishlistRepository.findWishlistByUserId(Long.valueOf(userId));
@@ -53,13 +54,18 @@ public class WishlistServiceImpl implements WishlistService {
           products.remove(product);
           break;
         default:
-          throw new Exception("Invalid action");
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action");
       }
       wishlist.setProducts(products);
       wishlistRepository.save(wishlist);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }

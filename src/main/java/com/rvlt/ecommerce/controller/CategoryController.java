@@ -21,33 +21,33 @@ public class CategoryController {
   @GetMapping
   public ResponseEntity<ResponseMessage<List<Category>>> getCategories() {
     ResponseMessage<List<Category>> res = categoryService.getCategories();
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   /** Get all products of a category **/
   @GetMapping("/{categoryId}")
   public ResponseEntity<ResponseMessage<List<Product>>> getCategoryById(@PathVariable("categoryId") String categoryId) {
     ResponseMessage<List<Product>> res = categoryService.getProductsByCategory(categoryId);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PostMapping
   public ResponseEntity<ResponseMessage<Void>> createCategory(@RequestBody RequestMessage<Category> category) {
     ResponseMessage<Void> res = categoryService.createCategory(category);
-    return new ResponseEntity<>(res, HttpStatus.CREATED);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   /** If not passing in `active`, default as false **/
   @PutMapping("/{categoryId}")
   public ResponseEntity<ResponseMessage<Void>> updateCategory(@PathVariable("categoryId") String categoryId, @RequestBody RequestMessage<Category> category) {
     ResponseMessage<Void> res = categoryService.updateCategory(categoryId, category);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @DeleteMapping("/{categoryId}")
   public ResponseEntity<ResponseMessage<Void>> deleteCategory(@PathVariable("categoryId") String categoryId) {
     ResponseMessage<Void> res = categoryService.deleteCategory(categoryId);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   // TODO 2: view counter, most recently viewed, ....

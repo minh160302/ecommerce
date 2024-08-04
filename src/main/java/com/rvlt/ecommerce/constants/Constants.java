@@ -4,6 +4,8 @@ public class Constants {
   public static final class SERVER_STATUS_CODE {
     public static final String SUCCESS = "1";
     public static final String FAILED = "0";
+    public static final String SERVER_FAILED = "-100";
+    public static final String MQ_ERROR = "-1";
   }
 
   public static final class SESSION_STATUS {
@@ -40,5 +42,6 @@ public class Constants {
 
   public static final class RVLT {
     public static final String userIdHeader = "X-RVLT-userId";
+    public static final String adminHeader = "rvlt_admin";
   }
 }

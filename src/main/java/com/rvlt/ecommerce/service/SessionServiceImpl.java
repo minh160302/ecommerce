@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.Optional;
@@ -53,7 +54,7 @@ public class SessionServiceImpl implements SessionService {
       Inventory inventory;
       Optional<Inventory> inv = inventoryRepository.findById(Long.valueOf(input.getProductId()));
       if (pd.isEmpty() || inv.isEmpty()) {
-        throw new Exception("Product/Inventory not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product/Inventory not found");
       }
       product = pd.get();
       inventory = inv.get();
@@ -61,7 +62,7 @@ public class SessionServiceImpl implements SessionService {
       Session session;
       Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
       if (ss.isEmpty()) {
-        throw new Exception("Session not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
       }
       session = ss.get();
       deleteSingleProductFromCart(session, product, inventory);
@@ -70,10 +71,14 @@ public class SessionServiceImpl implements SessionService {
       sessionRepository.save(session);
       inventoryRepository.save(inventory);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -92,7 +97,7 @@ public class SessionServiceImpl implements SessionService {
       Session session;
       Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
       if (ss.isEmpty()) {
-        throw new Exception("Session not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
       }
       session = ss.get();
       for (String productId : input.getProducts()) {
@@ -102,7 +107,7 @@ public class SessionServiceImpl implements SessionService {
         Inventory inventory;
         Optional<Inventory> inv = inventoryRepository.findById(Long.valueOf(productId));
         if (pd.isEmpty() || inv.isEmpty()) {
-          throw new Exception("Product/Inventory not found");
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product/Inventory not found");
         }
         product = pd.get();
         inventory = inv.get();
@@ -112,10 +117,14 @@ public class SessionServiceImpl implements SessionService {
         inventoryRepository.save(inventory);
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
@@ -137,7 +146,7 @@ public class SessionServiceImpl implements SessionService {
       Inventory inventory;
       Optional<Inventory> inv = inventoryRepository.findById(Long.valueOf(input.getProductId()));
       if (pd.isEmpty() || inv.isEmpty()) {
-        throw new Exception("Product/Inventory not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product/Inventory not found");
       }
       product = pd.get();
       inventory = inv.get();
@@ -145,17 +154,17 @@ public class SessionServiceImpl implements SessionService {
       Session session;
       Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
       if (ss.isEmpty())
-        throw new Exception("Session not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
       session = ss.get();
       if (session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE))
-        throw new Exception("Session inactive");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session inactive");
       // session-product
       SessionProduct sp;
       SessionProductKey spKey = new SessionProductKey(session.getId(), product.getId());
       Optional<SessionProduct> spOpt = spRepository.findById(spKey);
       // UPDATE when NO product in cart
       if (spOpt.isEmpty() && action.equals(Constants.CART_ACTIONS.UPDATE)) {
-        throw new Exception("Product not found in cart");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found in cart");
       }
       // ADD when NO product in cart
       else if (spOpt.isEmpty() && action.equals(Constants.CART_ACTIONS.ADD)) {
@@ -183,19 +192,23 @@ public class SessionServiceImpl implements SessionService {
       productRepository.save(product);
       inventoryRepository.save(inventory);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
-      // Manually trigger rollback
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
     }
     rs.setStatus(status);
     return rs;
   }
 
-  public void addToCart(SessionProduct sp, SessionProductKey spKey, Session session, Product product, Inventory inventory, int quantity, Date now) throws Exception {
+  public void addToCart(SessionProduct sp, SessionProductKey spKey, Session session, Product product, Inventory inventory, int quantity, Date now) throws ResponseStatusException {
     if (quantity > inventory.getInStockCount()) {
-      throw new Exception("In stock limit exceeded!");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "In stock limit exceeded!");
     }
     sp.setId(spKey);
     sp.setSession(session);
@@ -211,10 +224,10 @@ public class SessionServiceImpl implements SessionService {
   }
 
   @Transactional
-  public void updateCart(SessionProduct sp, Session session, Product product, Inventory inventory, int quantity, Date now) throws Exception {
+  public void updateCart(SessionProduct sp, Session session, Product product, Inventory inventory, int quantity, Date now) throws ResponseStatusException {
     int diff = quantity - sp.getCount();
     if (diff > inventory.getInStockCount()) {
-      throw new Exception("In stock limit exceeded!");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "In stock limit exceeded!");
     }
     sp.setCount(quantity);
     inventory.setInSessionHolding(inventory.getInSessionHolding() + diff);
@@ -223,12 +236,12 @@ public class SessionServiceImpl implements SessionService {
   }
 
   @Transactional
-  public void deleteSingleProductFromCart(Session session, Product product, Inventory inventory) throws Exception {
+  public void deleteSingleProductFromCart(Session session, Product product, Inventory inventory) throws ResponseStatusException {
     // session-product
     SessionProduct sp;
     SessionProductKey spKey = new SessionProductKey(session.getId(), product.getId());
     Optional<SessionProduct> spOpt = spRepository.findById(spKey);
-    if (spOpt.isEmpty()) throw new Exception("Product not in session");
+    if (spOpt.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not in session");
     sp = spOpt.get();
     int count = sp.getCount();
     session.setTotalAmount(session.getTotalAmount() - count * product.getPrice());

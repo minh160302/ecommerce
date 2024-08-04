@@ -21,18 +21,18 @@ public class UserController {
   @GetMapping("")
   public ResponseEntity<ResponseMessage<List<User>>> getUser() {
     ResponseMessage<List<User>> res = userService.getAllUsers();
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @GetMapping("/{userId}")
   public ResponseEntity<ResponseMessage<User>> getUserById(@PathVariable Long userId) {
     ResponseMessage<User> res = userService.getUserById(userId);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PostMapping("/onboarding")
   public ResponseEntity<ResponseMessage<Void>> onboardUser(@RequestBody RequestMessage<UserOnboardingRq> request) {
     ResponseMessage<Void> res = userService.userOnboarding(request);
-    return new ResponseEntity<>(res, HttpStatus.CREATED);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 }

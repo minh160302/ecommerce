@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
       List<User> users = userRepository.findAll();
       rs.setData(users);
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
     }
@@ -57,13 +58,16 @@ public class UserServiceImpl implements UserService {
       if (user.isPresent()) {
         rs.setData(user.get());
       } else {
-        status.setHttpStatusCode(String.valueOf(HttpStatus.NOT_FOUND.value()));
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-        status.setMessage("User not found");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
       }
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      if (e instanceof ResponseStatusException) {
+        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
+      } else {
+        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
+      }
       status.setMessage(e.getMessage());
     }
     rs.setStatus(status);
@@ -101,9 +105,9 @@ public class UserServiceImpl implements UserService {
       order.setHistory("");
       order.setSession(session);
       orderRepository.save(order);
-      status.setHttpStatusCode(String.valueOf(HttpStatus.CREATED.value()));
+      status.setHttpStatusCode(HttpStatus.CREATED.value());
     } catch (Exception e) {
-      status.setHttpStatusCode(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
       status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
       status.setMessage(e.getMessage());
       // Manually trigger rollback

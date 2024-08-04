@@ -7,7 +7,9 @@ import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
 import com.rvlt.ecommerce.model.Order;
 import com.rvlt.ecommerce.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
@@ -16,7 +18,7 @@ public interface OrderService {
 
   ResponseMessage<OrderStatusRs> getOrderStatus(Long id);
 
-  ResponseMessage<Void> submitOrder(RequestMessage<SubmitOrderRq> rq);
+  ResponseMessage<Void> submitOrder(HttpServletRequest httpServletRequest);
 
   ResponseMessage<Void> cancelOrder(RequestMessage<OrderActionRq> rq);
 

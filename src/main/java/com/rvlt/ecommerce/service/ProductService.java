@@ -14,7 +14,7 @@ public interface ProductService {
 
     ResponseMessage<Product> getProductById(Long id, HttpServletRequest httpServletRequest);
 
-    ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> request);
+    ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> request, HttpServletRequest httpServletRequest);
 
   ResponseMessage<List<Category>> getProductCategories(Long productId);
 

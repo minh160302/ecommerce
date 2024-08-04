@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @Setter
 public class Status {
-  private String httpStatusCode;
+  private int httpStatusCode;
   private String serverStatusCode;
   private String message;
 
@@ -16,7 +16,7 @@ public class Status {
   public Status() {
     this.message = "";
     this.serverStatusCode = Constants.SERVER_STATUS_CODE.SUCCESS;
-    this.httpStatusCode = String.valueOf(HttpStatus.OK.value());
+    this.httpStatusCode = HttpStatus.OK.value();
   }
 
   @Override

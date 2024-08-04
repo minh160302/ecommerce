@@ -20,6 +20,6 @@ public class WishlistController {
   @PostMapping
   public ResponseEntity<ResponseMessage<Void>> addProductToWishlist(@RequestBody RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
     ResponseMessage<Void> res = wishlistService.handleWishlistAction(rq, httpServletRequest);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 }

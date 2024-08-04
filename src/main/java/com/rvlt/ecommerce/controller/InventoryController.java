@@ -25,42 +25,42 @@ public class InventoryController {
   @GetMapping("")
   public ResponseEntity<ResponseMessage<List<Inventory>>> getAllInventory() {
     ResponseMessage<List<Inventory>> res = inventoryService.getAllInventory();
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @GetMapping("/{inventoryId}")
   public ResponseEntity<ResponseMessage<Inventory>> getInventoryById(@PathVariable Long inventoryId) {
     ResponseMessage<Inventory> res = inventoryService.getInventoryById(inventoryId);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PostMapping("")
   public ResponseEntity<ResponseMessage<Void>> importSingleInventory(@RequestBody RequestMessage<CreateInventoryRq> rq) {
       ResponseMessage<Void> res = inventoryService.importSingleInventory(rq);
-      return new ResponseEntity<>(res, HttpStatus.OK);
+      return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PostMapping("/batch")
   public ResponseEntity<ResponseMessage<Void>> importBatchInventories(@RequestBody RequestMessage<CreateInventoryBatchRq> request) {
     ResponseMessage<Void> res = inventoryService.importBatchInventories(request);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PostMapping(value = "/import-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ResponseMessage<Void>> importBatchExcel(@RequestParam("file") MultipartFile file)  {
     ResponseMessage<Void> res = inventoryService.importBatchThroughExcel(file);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @DeleteMapping("/{inventoryId}")
   public ResponseEntity<ResponseMessage<Void>> deleteInventoryById(@PathVariable Long inventoryId) {
     ResponseMessage<Void> res = inventoryService.deleteInventoryById(inventoryId);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PutMapping("/{inventoryId}")
   public ResponseEntity<ResponseMessage<Void>> updateInventoryById(@PathVariable Long inventoryId, @RequestBody RequestMessage<UpdateInventoryRq> rq) {
     ResponseMessage<Void> res = inventoryService.updateInventory(inventoryId, rq);
-    return new ResponseEntity<>(res, HttpStatus.OK);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 }
