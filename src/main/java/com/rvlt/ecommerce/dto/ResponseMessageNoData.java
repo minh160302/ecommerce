@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ResponseMessage<T> extends ResponseMessageNoData {
-  private T data;
+public class ResponseMessageNoData {
+  private Status status;
 }

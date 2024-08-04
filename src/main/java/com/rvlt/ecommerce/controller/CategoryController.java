@@ -49,6 +49,4 @@ public class CategoryController {
     ResponseMessage<Void> res = categoryService.deleteCategory(categoryId);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
-
-  // TODO 2: view counter, most recently viewed, ....
 }

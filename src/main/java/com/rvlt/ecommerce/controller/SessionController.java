@@ -19,14 +19,14 @@ public class SessionController {
   private SessionService sessionService;
 
   @PostMapping("/add-to-cart")
-  public ResponseEntity<ResponseMessage<Void>> addToCart(@RequestBody RequestMessage<HandleCartActionRq> request) {
+  public ResponseEntity<ResponseMessage<Void>> addToCart(@RequestBody RequestMessage<HandleCartActionRq> request) throws Exception {
     request.getData().setAction(Constants.CART_ACTIONS.ADD);
     ResponseMessage<Void> res = sessionService.handleCartAction(request);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @PostMapping("/update-cart")
-  public ResponseEntity<ResponseMessage<Void>> updateCart(@RequestBody RequestMessage<HandleCartActionRq> request) {
+  public ResponseEntity<ResponseMessage<Void>> updateCart(@RequestBody RequestMessage<HandleCartActionRq> request) throws Exception {
     request.getData().setAction(Constants.CART_ACTIONS.UPDATE);
     ResponseMessage<Void> res = sessionService.handleCartAction(request);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));

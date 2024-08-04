@@ -4,6 +4,7 @@ import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.user.UserOnboardingRq;
 import com.rvlt.ecommerce.model.User;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 

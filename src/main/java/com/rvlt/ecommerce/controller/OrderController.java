@@ -20,14 +20,14 @@ public class OrderController {
   private OrderService orderService;
 
   @GetMapping("/{orderId}")
-  public ResponseEntity<ResponseMessage<Order>> getOrderById(@PathVariable Long orderId) {
-    ResponseMessage<Order> res = orderService.getOrderById(orderId);
+  public ResponseEntity<ResponseMessage<Order>> getOrderById(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
+    ResponseMessage<Order> res = orderService.getOrderById(orderId, httpServletRequest);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
   @GetMapping("/tracking/{orderId}")
-  public ResponseEntity<ResponseMessage<OrderStatusRs>> getOrderStatus(@PathVariable Long orderId) {
-    ResponseMessage<OrderStatusRs> res = orderService.getOrderStatus(orderId);
+  public ResponseEntity<ResponseMessage<OrderStatusRs>> getOrderStatus(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
+    ResponseMessage<OrderStatusRs> res = orderService.getOrderStatus(orderId, httpServletRequest);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 

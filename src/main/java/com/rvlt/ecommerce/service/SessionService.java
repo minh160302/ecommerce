@@ -11,5 +11,5 @@ public interface SessionService {
 
   ResponseMessage<Void> deleteFromCartBatch(RequestMessage<DeleteFromCartBatchRq> request);
 
-  ResponseMessage<Void> handleCartAction(RequestMessage<HandleCartActionRq> request);
+  ResponseMessage<Void> handleCartAction(RequestMessage<HandleCartActionRq> request) throws Exception;
 }

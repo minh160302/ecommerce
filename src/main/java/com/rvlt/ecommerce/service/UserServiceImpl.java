@@ -15,7 +15,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -37,14 +36,8 @@ public class UserServiceImpl implements UserService {
   public ResponseMessage<List<User>> getAllUsers() {
     ResponseMessage<List<User>> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      List<User> users = userRepository.findAll();
-      rs.setData(users);
-    } catch (Exception e) {
-      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      status.setMessage(e.getMessage());
-    }
+    List<User> users = userRepository.findAll();
+    rs.setData(users);
     rs.setStatus(status);
     return rs;
   }
@@ -53,22 +46,11 @@ public class UserServiceImpl implements UserService {
   public ResponseMessage<User> getUserById(Long id) {
     ResponseMessage<User> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      Optional<User> user = userRepository.findById(id);
-      if (user.isPresent()) {
-        rs.setData(user.get());
-      } else {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-      }
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      } else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
+    Optional<User> user = userRepository.findById(id);
+    if (user.isPresent()) {
+      rs.setData(user.get());
+    } else {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
     }
     rs.setStatus(status);
     return rs;
@@ -81,38 +63,30 @@ public class UserServiceImpl implements UserService {
     UserOnboardingRq input = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      // create user
-      User user = new User();
-      user.setEmail(input.getEmail());
-      user.setCreatedAt(rq.getTime());
-      user.setFirstName(input.getFirstName());
-      user.setLastName(input.getLastName());
-      user.setDob(input.getDob());
-      userRepository.save(user);
-      // create new active session
-      Session session = new Session();
-      session.setUser(user);
-      session.setStatus(Constants.SESSION_STATUS.ACTIVE);
-      session.setCreatedAt(rq.getTime());
-      session.setUpdatedAt(rq.getTime());
-      session.setTotalAmount(0.0);
-      sessionRepository.save(session);
-      // create new order (NOT_SUBMITTED status)
-      Order order = new Order();
-      order.setStatus(Constants.ORDER_STATUS.NOT_SUBMITTED);
-      order.setCreatedAt(rq.getTime());
-      order.setHistory("");
-      order.setSession(session);
-      orderRepository.save(order);
-      status.setHttpStatusCode(HttpStatus.CREATED.value());
-    } catch (Exception e) {
-      status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-      status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      status.setMessage(e.getMessage());
-      // Manually trigger rollback
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-    }
+    // create user
+    User user = new User();
+    user.setEmail(input.getEmail());
+    user.setCreatedAt(rq.getTime());
+    user.setFirstName(input.getFirstName());
+    user.setLastName(input.getLastName());
+    user.setDob(input.getDob());
+    userRepository.save(user);
+    // create new active session
+    Session session = new Session();
+    session.setUser(user);
+    session.setStatus(Constants.SESSION_STATUS.ACTIVE);
+    session.setCreatedAt(rq.getTime());
+    session.setUpdatedAt(rq.getTime());
+    session.setTotalAmount(0.0);
+    sessionRepository.save(session);
+    // create new order (NOT_SUBMITTED status)
+    Order order = new Order();
+    order.setStatus(Constants.ORDER_STATUS.NOT_SUBMITTED);
+    order.setCreatedAt(rq.getTime());
+    order.setHistory("");
+    order.setSession(session);
+    orderRepository.save(order);
+    status.setHttpStatusCode(HttpStatus.CREATED.value());
     rs.setStatus(status);
     return rs;
   }

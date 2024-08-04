@@ -14,9 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Date;
 
 public interface OrderService {
-  ResponseMessage<Order> getOrderById(Long id);
+  ResponseMessage<Order> getOrderById(Long id, HttpServletRequest httpServletRequest);
 
-  ResponseMessage<OrderStatusRs> getOrderStatus(Long id);
+  ResponseMessage<OrderStatusRs> getOrderStatus(Long id, HttpServletRequest httpServletRequest);
 
   ResponseMessage<Void> submitOrder(HttpServletRequest httpServletRequest);
 

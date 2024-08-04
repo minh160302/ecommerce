@@ -19,6 +19,14 @@ public class WishlistController {
 
   @PostMapping
   public ResponseEntity<ResponseMessage<Void>> addProductToWishlist(@RequestBody RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
+    rq.getData().setAction(Constants.WISHLIST_ACTIONS.ADD);
+    ResponseMessage<Void> res = wishlistService.handleWishlistAction(rq, httpServletRequest);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
+  }
+
+  @DeleteMapping
+  public ResponseEntity<ResponseMessage<Void>> removeProductFromWishlist(@RequestBody RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
+    rq.getData().setAction(Constants.WISHLIST_ACTIONS.REMOVE);
     ResponseMessage<Void> res = wishlistService.handleWishlistAction(rq, httpServletRequest);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }

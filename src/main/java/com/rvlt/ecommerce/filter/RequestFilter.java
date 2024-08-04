@@ -1,11 +1,14 @@
 package com.rvlt.ecommerce.filter;
 
+import com.rvlt.ecommerce.constants.Constants;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -21,9 +24,8 @@ public class RequestFilter implements Filter {
   }
 
   @Override
-  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException, ResponseStatusException {
     HttpServletRequest request = (HttpServletRequest) servletRequest;
-    // logger.info("Client IP Address: {}", getClientIpAddress(request));
     filterChain.doFilter(servletRequest, servletResponse);
   }
 

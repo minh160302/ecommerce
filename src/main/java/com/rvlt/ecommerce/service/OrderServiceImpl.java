@@ -12,14 +12,13 @@ import com.rvlt.ecommerce.model.composite.SessionProduct;
 import com.rvlt.ecommerce.rabbitmq.QueueItem;
 import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.repository.*;
+import com.rvlt.ecommerce.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
@@ -50,54 +49,44 @@ public class OrderServiceImpl implements OrderService {
   @Autowired
   private RabbitMQProducerService mqProducerService;
 
+  @Autowired
+  private Utils utils;
+
   @Override
-  public ResponseMessage<Order> getOrderById(Long id) {
+  public ResponseMessage<Order> getOrderById(Long id, HttpServletRequest httpServletRequest) {
+    utils.validateUserHeader(httpServletRequest);
     ResponseMessage<Order> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      Optional<Order> orderOpt = orderRepository.findById(id);
-      if (orderOpt.isPresent()) {
-        rs.setData(orderOpt.get());
-      } else {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
-      }
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      } else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
+    String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+    Optional<Order> orderOpt = userIdHeader.equals(Constants.RVLT.adminHeader)
+            ? orderRepository.findById(id)
+            : orderRepository.findByOrderIdAndUserId(id, Long.parseLong(userIdHeader));
+    if (orderOpt.isPresent()) {
+      rs.setData(orderOpt.get());
+    } else {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found/Unauthorized");
     }
     rs.setStatus(status);
     return rs;
   }
 
   @Override
-  public ResponseMessage<OrderStatusRs> getOrderStatus(Long id) {
+  public ResponseMessage<OrderStatusRs> getOrderStatus(Long id, HttpServletRequest httpServletRequest) {
+    // TODO: authorize only users' orders
+    utils.validateUserHeader(httpServletRequest);
     ResponseMessage<OrderStatusRs> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      Optional<Order> orderOpt = orderRepository.findById(id);
-      if (orderOpt.isPresent()) {
-        Order order = orderOpt.get();
-        OrderStatusRs response = new OrderStatusRs();
-        response.setStatus(order.getStatus());
-        rs.setData(response);
-      } else {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
-      }
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      } else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
+    String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+    Optional<Order> orderOpt = userIdHeader.equals(Constants.RVLT.adminHeader)
+            ? orderRepository.findById(id)
+            : orderRepository.findByOrderIdAndUserId(id, Long.parseLong(userIdHeader));
+    if (orderOpt.isPresent()) {
+      Order order = orderOpt.get();
+      OrderStatusRs response = new OrderStatusRs();
+      response.setStatus(order.getStatus());
+      rs.setData(response);
+    } else {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found/Unauthorized");
     }
     rs.setStatus(status);
     return rs;
@@ -106,43 +95,27 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public ResponseMessage<Void> submitOrder(HttpServletRequest httpServletRequest) {
+    utils.validateUserHeader(httpServletRequest);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      String userId = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
-      if (userId == null || userId.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request headers.");
-      }
-      SubmitOrderRq request = new SubmitOrderRq(userId);
-      QueueItem item = new QueueItem();
-      item.setType("submit_order");
-      item.setData(request);
-      mqProducerService.sendOrderMessage(item);
-      /**
-       * @apiNote by Minh
-       * - request to payment api here.
-       * - Order is considered as PROCESSING if and only if payment succeeded
-       * - idea:
-       *    - after payment made, some available order status:
-       *        - PAYMENT_PROCESSING, PAYMENT_APPROVED, PAYMENT_REJECTED
-       *        - handle appropriately for each status (later)
-       */
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      }
-      else if (e instanceof AmqpException) {
-        status.setHttpStatusCode(HttpStatus.BAD_REQUEST.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.MQ_ERROR);
-      }
-      else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    String userId = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
+    if (userId == null || userId.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request headers.");
     }
+    SubmitOrderRq request = new SubmitOrderRq(userId);
+    QueueItem item = new QueueItem();
+    item.setType("submit_order");
+    item.setData(request);
+    mqProducerService.sendOrderMessage(item);
+    /**
+     * @apiNote by Minh
+     * - request to payment api here.
+     * - Order is considered as PROCESSING if and only if payment succeeded
+     * - idea:
+     *    - after payment made, some available order status:
+     *        - PAYMENT_PROCESSING, PAYMENT_APPROVED, PAYMENT_REJECTED
+     *        - handle appropriately for each status (later)
+     */
     rs.setStatus(status);
     return rs;
   }
@@ -153,56 +126,44 @@ public class OrderServiceImpl implements OrderService {
     OrderActionRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
-    try {
-      // check validity
-      Long userId = Long.valueOf(request.getUserId());
-      Long sessionId = Long.valueOf(request.getSessionId());
-      Optional<User> userOpt = userRepository.findById(userId);
-      if (userOpt.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
-      }
-      Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
-      if (sessionOpt.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
-      }
-      Session session = sessionOpt.get();
-      Order order = session.getOrder();
-      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
-      }
-      // cancel order
-      List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
-      // update counts
-      for (SessionProduct sp : spList) {
-        Product product = sp.getProduct();
-        Inventory inventory = product.getInventory();
-        int returnCount = inventory.getInStockCount() + sp.getCount();
-        inventory.setInStockCount(returnCount);
-        inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() - sp.getCount());
-        product.setInStock(returnCount);
-        int newBalance = this.calculateBalance(inventory);
-        inventory.setBalance(newBalance);
-        if (this.calculateBalance(inventory) != 0) {
-          System.out.println("WARNING: Item [" + inventory.getName() + "]'s count does not balance: diff" + inventory.getBalance());
-        }
-        inventoryRepository.save(inventory);
-        productRepository.save(product);
-      }
-      order.setStatus(Constants.ORDER_STATUS.PROCESSING_CANCEL);
-      orderRepository.save(order);
-      // TODO: 1. more actions on order cancel
-      // TODO: 2. When cancel order, inStock does not update count immediately, as items need time to return to inventory
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      } else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    // check validity
+    Long userId = Long.valueOf(request.getUserId());
+    Long sessionId = Long.valueOf(request.getSessionId());
+    Optional<User> userOpt = userRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
     }
+    Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
+    if (sessionOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
+    }
+    Session session = sessionOpt.get();
+    Order order = session.getOrder();
+    if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+    }
+    // cancel order
+    List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
+    // update counts
+    for (SessionProduct sp : spList) {
+      Product product = sp.getProduct();
+      Inventory inventory = product.getInventory();
+      int returnCount = inventory.getInStockCount() + sp.getCount();
+      inventory.setInStockCount(returnCount);
+      inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() - sp.getCount());
+      product.setInStock(returnCount);
+      int newBalance = this.calculateBalance(inventory);
+      inventory.setBalance(newBalance);
+      if (this.calculateBalance(inventory) != 0) {
+        System.out.println("WARNING: Item [" + inventory.getName() + "]'s count does not balance: diff" + inventory.getBalance());
+      }
+      inventoryRepository.save(inventory);
+      productRepository.save(product);
+    }
+    order.setStatus(Constants.ORDER_STATUS.PROCESSING_CANCEL);
+    orderRepository.save(order);
+    // TODO: 1. more actions on order cancel
+    // TODO: 2. When cancel order, inStock does not update count immediately, as items need time to return to inventory
     rs.setStatus(status);
     return rs;
   }
@@ -215,48 +176,36 @@ public class OrderServiceImpl implements OrderService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     Date now = new Date();
-    try {
-      // check validity
-      Long userId = Long.valueOf(request.getUserId());
-      Long sessionId = Long.valueOf(request.getSessionId());
-      Optional<User> userOpt = userRepository.findById(userId);
-      if (userOpt.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
-      }
-      Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
-      if (sessionOpt.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
-      }
-      Session session = sessionOpt.get();
-      Order order = session.getOrder();
-      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status to process. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
-      }
-      // process order
-      List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
-      // update counts
-      for (SessionProduct sp : spList) {
-        Inventory inventory = sp.getProduct().getInventory();
-        int cnt = sp.getCount();
-        inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() - cnt);
-        inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() + cnt);
-        inventoryRepository.save(inventory);
-      }
-      order.setStatus(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS);
-      String currentHist = order.getHistory();
-      order.setHistory(currentHist + " | " + "init_delivery_at: " + now);
-      orderRepository.save(order);
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      } else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    // check validity
+    Long userId = Long.valueOf(request.getUserId());
+    Long sessionId = Long.valueOf(request.getSessionId());
+    Optional<User> userOpt = userRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
     }
+    Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
+    if (sessionOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
+    }
+    Session session = sessionOpt.get();
+    Order order = session.getOrder();
+    if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status to process. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+    }
+    // process order
+    List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
+    // update counts
+    for (SessionProduct sp : spList) {
+      Inventory inventory = sp.getProduct().getInventory();
+      int cnt = sp.getCount();
+      inventory.setProcessingSubmitCount(inventory.getProcessingSubmitCount() - cnt);
+      inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() + cnt);
+      inventoryRepository.save(inventory);
+    }
+    order.setStatus(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS);
+    String currentHist = order.getHistory();
+    order.setHistory(currentHist + " | " + "init_delivery_at: " + now);
+    orderRepository.save(order);
     rs.setStatus(status);
     return rs;
   }
@@ -268,48 +217,36 @@ public class OrderServiceImpl implements OrderService {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     Date now = new Date();
-    try {
-      // check validity
-      Long userId = Long.valueOf(request.getUserId());
-      Long sessionId = Long.valueOf(request.getSessionId());
-      Optional<User> userOpt = userRepository.findById(userId);
-      if (userOpt.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
-      }
-      Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
-      if (sessionOpt.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
-      }
-      Session session = sessionOpt.get();
-      Order order = session.getOrder();
-      if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS)) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status on order receive. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
-      }
-      // on order receive
-      List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
-      // update counts
-      for (SessionProduct sp : spList) {
-        Inventory inventory = sp.getProduct().getInventory();
-        int cnt = sp.getCount();
-        inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() - cnt);
-        inventory.setDeliveredCount(inventory.getDeliveredCount() + cnt);
-        inventoryRepository.save(inventory);
-      }
-      order.setStatus(Constants.ORDER_STATUS.DELIVERED);
-      String currentHist = order.getHistory();
-      order.setHistory(currentHist + " | " + "order_received_at: " + now);
-      orderRepository.save(order);
-    } catch (Exception e) {
-      if (e instanceof ResponseStatusException) {
-        status.setHttpStatusCode(((ResponseStatusException) e).getStatusCode().value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.FAILED);
-      } else {
-        status.setHttpStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        status.setServerStatusCode(Constants.SERVER_STATUS_CODE.SERVER_FAILED);
-      }
-      status.setMessage(e.getMessage());
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+    // check validity
+    Long userId = Long.valueOf(request.getUserId());
+    Long sessionId = Long.valueOf(request.getSessionId());
+    Optional<User> userOpt = userRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
     }
+    Optional<Session> sessionOpt = sessionRepository.findBySessionIdAndUserId(sessionId, userId);
+    if (sessionOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found or not belong to this user.");
+    }
+    Session session = sessionOpt.get();
+    Order order = session.getOrder();
+    if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status on order receive. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
+    }
+    // on order receive
+    List<SessionProduct> spList = spRepository.findProductsInSession(sessionId);
+    // update counts
+    for (SessionProduct sp : spList) {
+      Inventory inventory = sp.getProduct().getInventory();
+      int cnt = sp.getCount();
+      inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() - cnt);
+      inventory.setDeliveredCount(inventory.getDeliveredCount() + cnt);
+      inventoryRepository.save(inventory);
+    }
+    order.setStatus(Constants.ORDER_STATUS.DELIVERED);
+    String currentHist = order.getHistory();
+    order.setHistory(currentHist + " | " + "order_received_at: " + now);
+    orderRepository.save(order);
     rs.setStatus(status);
     return rs;
   }
@@ -354,7 +291,7 @@ public class OrderServiceImpl implements OrderService {
         if (invenOpt.isPresent()) {
           Inventory inventory = invenOpt.get();
           if (inventory.getInStockCount() < diff) {
-            throw new AmqpRejectAndDontRequeueException("Insufficient inventory count: id " + inventory.getName() + " amount:" + inventory.getInStockCount());
+            throw new AmqpRejectAndDontRequeueException("Insufficient inventory count: id [" + inventory.getName() + "] amount: " + inventory.getInStockCount());
           }
           inventory.setInStockCount(inventory.getInStockCount() - diff);
           inventory.setInSessionHolding(inventory.getInSessionHolding() - diff);

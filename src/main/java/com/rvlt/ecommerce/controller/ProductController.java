@@ -21,8 +21,8 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("")
-    public ResponseEntity<ResponseMessage<List<Product>>> getProduct() {
-        ResponseMessage<List<Product>> res = productService.getAllProduct();
+    public ResponseEntity<ResponseMessage<List<Product>>> getProduct(HttpServletRequest httpServletRequest) {
+        ResponseMessage<List<Product>> res = productService.getAllProduct(httpServletRequest);
         return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
     }
 
@@ -42,8 +42,8 @@ public class ProductController {
 
     /** get categories of a product **/
     @GetMapping("/{productId}/categories")
-    public ResponseEntity<ResponseMessage<List<Category>>> getProductCategories(@PathVariable Long productId){
-      ResponseMessage<List<Category>> res = productService.getProductCategories(productId);
+    public ResponseEntity<ResponseMessage<List<Category>>> getProductCategories(@PathVariable Long productId, HttpServletRequest httpServletRequest){
+      ResponseMessage<List<Category>> res = productService.getProductCategories(productId, httpServletRequest);
       return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
     }
 
