@@ -11,13 +11,8 @@ services:
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
-    expose:
-      - "5432"
     ports:
       - "5432:5432"
-    networks:
-      - postgres
-    command: -p 5432
     restart: unless-stopped
 
   rabbitmq:
@@ -33,8 +28,6 @@ services:
       - RABBITMQ_ERLANG_COOKIE=cluster_cookie
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=admin
-    networks:
-      - rabbitmq
     restart: unless-stopped
 
   prometheus:
@@ -47,6 +40,8 @@ services:
     volumes:
       - ./src/main/resources/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - ./data:/prometheus
+    depends_on:
+      - spring-app
     restart: unless-stopped
 
   grafana:
@@ -56,15 +51,38 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+    depends_on:
+      - spring-app
     restart: unless-stopped
 
-networks:
-  postgres:
-    driver: bridge
-  rabbitmq:
-    driver: bridge
-  monitoring:
-    driver: bridge
+#  spring-app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - postgres
+#      - rabbitmq
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=12345678
+#      - SPRING_RABBITMQ_HOST=rabbitmq
+
+#networks:
+#  rvlt:
+#    name: rvlt-network
+#    driver: bridge
+#  postgres:
+#    driver: bridge
+#  rabbitmq:
+#    driver: bridge
+#  monitoring:
+#    driver: bridge
+#  spring-app:
+#    driver: bridge
 
 volumes:
   prometheus-data:
