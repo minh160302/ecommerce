@@ -4,9 +4,7 @@ import com.rvlt.ecommerce.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.dto.order.OrderActionRq;
-import com.rvlt.ecommerce.dto.order.OrderStatusRs;
-import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
+import com.rvlt.ecommerce.dto.order.*;
 import com.rvlt.ecommerce.model.*;
 import com.rvlt.ecommerce.model.composite.SessionProduct;
 import com.rvlt.ecommerce.rabbitmq.QueueItem;
@@ -21,10 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -247,6 +242,56 @@ public class OrderServiceImpl implements OrderService {
     String currentHist = order.getHistory();
     order.setHistory(currentHist + " | " + "order_received_at: " + now);
     orderRepository.save(order);
+    rs.setStatus(status);
+    return rs;
+  }
+
+  @Override
+  public ResponseMessage<PreviousOrderRs> getPreviousOrdersByUserId(RequestMessage<OrderByUserRq> rq) {
+    OrderByUserRq request = rq.getData();
+    ResponseMessage<PreviousOrderRs> rs = new ResponseMessage<>();
+    Status status = new Status();
+
+    Long userId = Long.valueOf(request.getUserId());
+    Optional<User> userOpt = userRepository.findById(userId);
+    if (userOpt.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId);
+    }
+
+    // get all inactive sessions
+    List<Session> inactiveSessions = sessionRepository.findInactiveSessionByUser(userId);
+    List<OrderWithSessionProducts> previousOrders = new ArrayList<>();
+
+    for (Session session : inactiveSessions) {
+      Order order = session.getOrder();
+      if (order != null) {
+        // set order info
+        OrderWithSessionProducts orderWithProducts = new OrderWithSessionProducts();
+        orderWithProducts.setId(order.getId());
+        orderWithProducts.setStatus(order.getStatus());
+        orderWithProducts.setCreatedAt(order.getCreatedAt());
+        orderWithProducts.setSubmittedAt(order.getSubmitted_at());
+        orderWithProducts.setTotalAmount(session.getTotalAmount());
+
+        // set product info from each session product
+        List<OrderWithSessionProducts.ProductInOrder> products = new ArrayList<>();
+        for (SessionProduct sp : session.getSessionProducts()) {
+          OrderWithSessionProducts.ProductInOrder productInOrder = new OrderWithSessionProducts.ProductInOrder();
+          productInOrder.setId(sp.getProduct().getId());
+          productInOrder.setName(sp.getProduct().getName());
+          productInOrder.setCount(sp.getCount());
+          products.add(productInOrder);
+        }
+        orderWithProducts.setProducts(products);
+
+        previousOrders.add(orderWithProducts);
+      }
+    }
+
+    PreviousOrderRs previousOrdersRs = new PreviousOrderRs();
+    previousOrdersRs.setPreviousOrders(previousOrders);
+
+    rs.setData(previousOrdersRs);
     rs.setStatus(status);
     return rs;
   }

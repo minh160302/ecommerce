@@ -2,9 +2,7 @@ package com.rvlt.ecommerce.controller;
 
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
-import com.rvlt.ecommerce.dto.order.OrderActionRq;
-import com.rvlt.ecommerce.dto.order.OrderStatusRs;
-import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
+import com.rvlt.ecommerce.dto.order.*;
 import com.rvlt.ecommerce.model.Order;
 import com.rvlt.ecommerce.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -22,6 +22,12 @@ public class OrderController {
   @GetMapping("/{orderId}")
   public ResponseEntity<ResponseMessage<Order>> getOrderById(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
     ResponseMessage<Order> res = orderService.getOrderById(orderId, httpServletRequest);
+    return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
+  }
+
+  @PostMapping("")
+  public ResponseEntity<ResponseMessage<PreviousOrderRs>> getPreviousOrdersByUserId(@RequestBody RequestMessage<OrderByUserRq> rq) {
+    ResponseMessage<PreviousOrderRs> res = orderService.getPreviousOrdersByUserId(rq);
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 

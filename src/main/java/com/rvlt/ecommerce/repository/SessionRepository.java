@@ -17,4 +17,8 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
   @Query(value = "SELECT * from sessions where status = 'ACTIVE' and user_id = ?1",
           nativeQuery = true)
   List<Session> findActiveSessionByUser(Long userId);
+
+  @Query(value = "SELECT * from sessions where status = 'INACTIVE' and user_id = ?1",
+          nativeQuery = true)
+  List<Session> findInactiveSessionByUser(Long userId);
 }

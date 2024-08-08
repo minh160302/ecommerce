@@ -1,61 +1,122 @@
--- Users with diverse backgrounds
-INSERT INTO users(firstname, lastname, dob, email, created_at) VALUES
-                                                                   ('Alice', 'Johnson', '15/03/1985', 'alice.j@email.com', current_timestamp - interval '2 years'),
-                                                                   ('Mohammed', 'Al-Fayed', '22/09/1990', 'mo.fayed@email.com', current_timestamp - interval '1 year'),
-                                                                   ('Yuki', 'Tanaka', '07/12/1988', 'yuki.t@email.com', current_timestamp - interval '6 months'),
-                                                                   ('Maria', 'Garcia', '30/06/1995', 'maria.g@email.com', current_timestamp - interval '3 months'),
-                                                                   ('Olga', 'Petrova', '18/11/1992', 'olga.p@email.com', current_timestamp - interval '1 month');
+-- Step 1: Update some existing orders to 'SUBMITTED' status
+UPDATE orders
+SET status = 'PROCESSING_SUBMIT', submitted_at = current_timestamp
+WHERE id IN (1, 2, 3, 4, 5);
 
--- Inventories with various products and quantities
-INSERT INTO inventories(name, total_count, in_stock_count, processing_count, delivered_count, in_session_holding, balance) VALUES
-                                                                                                                               ('High-End Gaming PC', 20, 12, 3, 2, 3, 0),
-                                                                                                                               ('Wireless Earbuds', 500, 445, 30, 20, 5, 0),
-                                                                                                                               ('Smart Home Hub', 100, 77, 15, 5, 3, 0),
-                                                                                                                               ('4K Ultra HD TV', 50, 38, 8, 2, 2, 0),
-                                                                                                                               ('Ergonomic Office Chair', 75, 57, 10, 5, 3, 0),
-                                                                                                                               ('Smartphone', 200, 147, 40, 10, 3, 0),
-                                                                                                                               ('Digital Camera', 30, 23, 3, 2, 2, 0),
-                                                                                                                               ('Robot Vacuum Cleaner', 60, 49, 7, 3, 1, 0);
+-- Step 2: Update corresponding sessions to 'INACTIVE'
+UPDATE sessions
+SET status = 'INACTIVE', updated_at = current_timestamp
+WHERE id IN (1, 2, 3, 4, 5);
 
--- Products with varying prices
-INSERT INTO products(id, name, in_stock, price)
-SELECT id, name, in_stock_count,
+-- Step 3: Add products to the submitted orders (sessions 1-5)
+INSERT INTO sessions_products (session_id, product_id, count)
+VALUES
+    (1, 1, 2),  -- 2 Gaming chairs
+    (1, 3, 1),  -- 1 Amazon Echo Dot
+    (2, 2, 1),  -- 1 Laptop Backpack
+    (2, 4, 3),  -- 3 Bioderma Facial cleansers
+    (3, 3, 2),  -- 2 Amazon Echo Dots
+    (4, 1, 1),  -- 1 Gaming chair
+    (4, 2, 1),  -- 1 Laptop Backpack
+    (5, 4, 5);  -- 5 Bioderma Facial cleansers
+
+-- Step 4: Update the total_amount in the submitted sessions
+UPDATE sessions s
+SET total_amount = (
+    SELECT COALESCE(SUM(sp.count * p.price), 0)
+    FROM sessions_products sp
+             JOIN products p ON sp.product_id = p.id
+    WHERE sp.session_id = s.id
+)
+WHERE s.id IN (1, 2, 3, 4, 5);
+
+-- Step 5: Create new active sessions for users who just had their orders submitted
+INSERT INTO sessions (status, total_amount, created_at, updated_at, user_id)
+SELECT 'ACTIVE', 0.0, current_timestamp, NULL, user_id
+FROM sessions
+WHERE id IN (1, 2, 3, 4, 5);
+
+-- Step 6: Create new 'NOT_SUBMITTED' orders for the new active sessions
+INSERT INTO orders (id, status, created_at, history)
+SELECT id, 'NOT_SUBMITTED', current_timestamp, NULL
+FROM sessions
+WHERE status = 'ACTIVE' AND user_id IN (1, 2, 3, 4, 5);
+
+-- Step 7: Add products to the new active sessions
+WITH new_active_sessions AS (
+    SELECT id
+    FROM sessions
+    WHERE status = 'ACTIVE' AND user_id IN (1, 2, 3, 4, 5)
+)
+INSERT INTO sessions_products (session_id, product_id, count)
+SELECT id,
        CASE
-           WHEN name = 'High-End Gaming PC' THEN 1599.99
-           WHEN name = 'Wireless Earbuds' THEN 129.99
-           WHEN name = 'Smart Home Hub' THEN 89.99
-           WHEN name = '4K Ultra HD TV' THEN 799.99
-           WHEN name = 'Ergonomic Office Chair' THEN 249.99
-           WHEN name = 'Smartphone' THEN 699.99
-           WHEN name = 'Digital Camera' THEN 449.99
-           WHEN name = 'Robot Vacuum Cleaner' THEN 299.99
-           ELSE 99.99  -- default price
-           END
-FROM inventories;
+           WHEN id % 4 = 0 THEN 1  -- Gaming chair
+           WHEN id % 4 = 1 THEN 2  -- Laptop Backpack
+           WHEN id % 4 = 2 THEN 3  -- Amazon Echo Dot
+           ELSE 4  -- Bioderma Facial cleanser
+           END,
+       1
+FROM new_active_sessions;
 
--- Sessions with different statuses and amounts
-INSERT INTO sessions(status, total_amount, created_at, updated_at, user_id) VALUES
-                                                                                ('ACTIVE', 4799.97, current_timestamp - interval '2 days', current_timestamp - interval '1 day', 1),
-                                                                                ('ACTIVE', 349.97, current_timestamp - interval '5 days', current_timestamp - interval '4 days', 2),
-                                                                                ('ACTIVE', 1849.97, current_timestamp - interval '1 day', current_timestamp, 3),
-                                                                                ('INACTIVE', 0, current_timestamp - interval '10 days', NULL, 4),
-                                                                                ('ACTIVE', 2149.97, current_timestamp - interval '3 hours', current_timestamp - interval '1 hour', 5);
+-- Step 8: Update the total_amount in the new active sessions
+UPDATE sessions s
+SET total_amount = (
+    SELECT COALESCE(SUM(sp.count * p.price), 0)
+    FROM sessions_products sp
+             JOIN products p ON sp.product_id = p.id
+    WHERE sp.session_id = s.id
+)
+WHERE status = 'ACTIVE' AND user_id IN (1, 2, 3, 4, 5);
 
--- Orders with various statuses
-INSERT INTO orders(id, status, created_at, submitted_at, history) VALUES
-                                                                      (1, 'PROCESSING', current_timestamp - interval '2 days', current_timestamp - interval '1 day', 'Order received, payment confirmed'),
-                                                                      (2, 'DELIVERED', current_timestamp - interval '5 days', current_timestamp - interval '4 days', 'Order received, processed, shipped, delivered'),
-                                                                      (3, 'IN_PROGRESS', current_timestamp - interval '1 day', current_timestamp, 'Order received, processing'),
-                                                                      (4, 'NOT_SUBMITTED', current_timestamp - interval '10 days', NULL, NULL),
-                                                                      (5, 'CANCELLED', current_timestamp - interval '3 hours', current_timestamp - interval '1 hour', 'Order received, cancelled by customer');
+-- Step 9: Create additional submitted order for user 1
+INSERT INTO sessions (status, total_amount, created_at, updated_at, user_id)
+VALUES ('INACTIVE', 0, current_timestamp - interval '2 days', current_timestamp, 1);
 
--- Sessions-Products relationships
-INSERT INTO sessions_products(session_id, product_id, count) VALUES
-                                                                 (1, 1, 3),  -- 3 High-End Gaming PCs in session 1
-                                                                 (2, 2, 2),  -- 2 Wireless Earbuds in session 2
-                                                                 (2, 3, 1),  -- 1 Smart Home Hub in session 2
-                                                                 (3, 4, 2),  -- 2 4K Ultra HD TVs in session 3
-                                                                 (3, 5, 1),  -- 1 Ergonomic Office Chair in session 3
-                                                                 (5, 6, 2),  -- 2 Smartphones in session 5
-                                                                 (5, 7, 2),  -- 2 Digital Cameras in session 5
-                                                                 (5, 8, 1);  -- 1 Robot Vacuum Cleaner in session 5
+INSERT INTO orders (id, status, created_at, submitted_at, history)
+SELECT id, 'DELIVERY_IN_PROGRESS', created_at, current_timestamp - interval '1 day', 'Order placed'
+FROM sessions
+WHERE user_id = 1 ORDER BY id DESC LIMIT 1;
+
+-- Step 10: Add products to the additional order for user 1
+WITH new_session AS (
+    SELECT id
+    FROM sessions
+    WHERE user_id = 1
+    ORDER BY id DESC
+    LIMIT 1
+)
+INSERT INTO sessions_products (session_id, product_id, count)
+SELECT id, 1, 2  -- 2 Gaming chairs
+FROM new_session;
+
+-- Step 11: Create additional submitted order for user 2
+INSERT INTO sessions (status, total_amount, created_at, updated_at, user_id)
+VALUES ('INACTIVE', 0, current_timestamp - interval '3 days', current_timestamp, 2);
+
+INSERT INTO orders (id, status, created_at, submitted_at, history)
+SELECT id, 'DELIVERED', created_at, current_timestamp - interval '2 days', 'Order placed|Order delivered'
+FROM sessions
+WHERE user_id = 2 ORDER BY id DESC LIMIT 1;
+
+-- Step 12: Add products to the additional order for user 2
+WITH new_session AS (
+    SELECT id
+    FROM sessions
+    WHERE user_id = 2
+    ORDER BY id DESC
+    LIMIT 1
+)
+INSERT INTO sessions_products (session_id, product_id, count)
+SELECT id, 3, 2  -- 2 Amazon Echo Dots
+FROM new_session;
+
+-- Step 13: Update the total_amount for the additional orders
+UPDATE sessions s
+SET total_amount = (
+    SELECT COALESCE(SUM(sp.count * p.price), 0)
+    FROM sessions_products sp
+             JOIN products p ON sp.product_id = p.id
+    WHERE sp.session_id = s.id
+)
+WHERE user_id IN (1, 2) AND status = 'INACTIVE';
