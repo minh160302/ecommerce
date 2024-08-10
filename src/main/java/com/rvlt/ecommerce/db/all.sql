@@ -139,10 +139,13 @@ CREATE TABLE if not exists wishlist_product
 
 CREATE TABLE if not exists product_view
 (
-    user_id BIGINT NOT NULL,
+    user_id     BIGINT NOT NULL,
     product_id  BIGINT NOT NULL,
+    PRIMARY KEY (user_id, product_id),
     count       BIGINT NOT NULL,
-    history     VARCHAR(255)
+    history     VARCHAR(255),
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
 -- format: timestamp@count | timestamp@count |  ...
 );
 
