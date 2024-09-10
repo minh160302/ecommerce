@@ -1,8 +1,9 @@
-package com.rvlt.ecommerce.exception;
+package com.rvlt._common.exception;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import com.rvlt.ecommerce.dto.ResponseMessageNoData;
 import com.rvlt.ecommerce.dto.Status;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 
 @ControllerAdvice
+@Order(1)
 public class CustomResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler(value

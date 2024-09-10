@@ -1,13 +1,13 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.user.UserOnboardingRq;
-import com.rvlt.ecommerce.model.Order;
-import com.rvlt.ecommerce.model.Session;
-import com.rvlt.ecommerce.model.User;
+import com.rvlt._common.model.Order;
+import com.rvlt._common.model.Session;
+import com.rvlt._common.model.User;
 import com.rvlt.ecommerce.repository.OrderRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
 import com.rvlt.ecommerce.repository.UserRepository;
@@ -71,6 +71,7 @@ public class UserServiceImpl implements UserService {
     user.setLastName(input.getLastName());
     user.setDob(input.getDob());
     userRepository.save(user);
+
     // create new active session
     Session session = new Session();
     session.setUser(user);

@@ -1,4 +1,4 @@
-package com.rvlt.ecommerce.model;
+package com.rvlt._common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

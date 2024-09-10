@@ -1,8 +1,8 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.model.Product;
-import com.rvlt.ecommerce.model.composite.ProductView;
-import com.rvlt.ecommerce.model.composite.ProductViewKey;
+import com.rvlt._common.model.Product;
+import com.rvlt._common.model.composite.ProductView;
+import com.rvlt._common.model.composite.ProductViewKey;
 import com.rvlt.ecommerce.repository.ProductViewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

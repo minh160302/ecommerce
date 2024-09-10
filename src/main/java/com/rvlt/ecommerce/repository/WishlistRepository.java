@@ -1,6 +1,6 @@
 package com.rvlt.ecommerce.repository;
 
-import com.rvlt.ecommerce.model.Wishlist;
+import com.rvlt._common.model.Wishlist;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

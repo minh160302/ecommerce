@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class HandleCartActionRq {
   private String productId;
-  private String sessionId;
+//  private String sessionId;
   private Integer quantity;
   @JsonIgnore
   private String action;

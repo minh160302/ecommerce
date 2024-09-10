@@ -3,10 +3,12 @@ package com.rvlt.ecommerce.service;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
-import com.rvlt.ecommerce.model.Category;
-import com.rvlt.ecommerce.model.Product;
+import com.rvlt._common.model.Category;
+import com.rvlt._common.model.Product;
 import com.rvlt.ecommerce.repository.CategoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
+import com.rvlt.ecommerce.utils.Validator;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Autowired
   private ProductRepository productRepository;
+
+  @Autowired
+  private Validator validator;
 
   @Override
   public ResponseMessage<List<Category>> getCategories() {
@@ -49,7 +54,8 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
-  public ResponseMessage<Void> createCategory(RequestMessage<Category> rq) {
+  public ResponseMessage<Void> createCategory(RequestMessage<Category> rq, HttpServletRequest httpServletRequest) {
+    validator.validateAdmin(httpServletRequest);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     status.setHttpStatusCode(HttpStatus.CREATED.value());
@@ -65,7 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
-  public ResponseMessage<Void> updateCategory(String categoryId, RequestMessage<Category> rq) {
+  public ResponseMessage<Void> updateCategory(String categoryId, RequestMessage<Category> rq, HttpServletRequest httpServletRequest) {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     Category input = rq.getData();
@@ -89,7 +95,7 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> deleteCategory(String categoryId) {
+  public ResponseMessage<Void> deleteCategory(String categoryId, HttpServletRequest httpServletRequest) {
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     categoryRepository.deleteById(Long.valueOf(categoryId));

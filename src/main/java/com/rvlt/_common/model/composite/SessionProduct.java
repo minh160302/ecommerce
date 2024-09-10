@@ -1,7 +1,7 @@
-package com.rvlt.ecommerce.model.composite;
+package com.rvlt._common.model.composite;
 
-import com.rvlt.ecommerce.model.Product;
-import com.rvlt.ecommerce.model.Session;
+import com.rvlt._common.model.Product;
+import com.rvlt._common.model.Session;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

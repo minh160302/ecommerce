@@ -1,7 +1,7 @@
 package com.rvlt.ecommerce.rabbitmq;
 
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
-import com.rvlt.ecommerce.model.User;
+import com.rvlt._common.model.User;
 import com.rvlt.ecommerce.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

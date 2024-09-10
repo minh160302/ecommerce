@@ -1,18 +1,18 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
+import com.rvlt._common.model.*;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
-import com.rvlt.ecommerce.model.*;
-import com.rvlt.ecommerce.model.composite.SessionProduct;
+import com.rvlt._common.model.composite.SessionProduct;
 import com.rvlt.ecommerce.rabbitmq.QueueItem;
 import com.rvlt.ecommerce.rabbitmq.RabbitMQProducerService;
 import com.rvlt.ecommerce.repository.*;
-import com.rvlt.ecommerce.utils.Utils;
+import com.rvlt.ecommerce.utils.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,11 +50,11 @@ public class OrderServiceImpl implements OrderService {
   private RabbitMQProducerService mqProducerService;
 
   @Autowired
-  private Utils utils;
+  private Validator validator;
 
   @Override
   public ResponseMessage<Order> getOrderById(Long id, HttpServletRequest httpServletRequest) {
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<Order> rs = new ResponseMessage<>();
     Status status = new Status();
     String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
   @Override
   public ResponseMessage<OrderStatusRs> getOrderStatus(Long id, HttpServletRequest httpServletRequest) {
     // TODO: authorize only users' orders
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<OrderStatusRs> rs = new ResponseMessage<>();
     Status status = new Status();
     String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
@@ -95,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public ResponseMessage<Void> submitOrder(HttpServletRequest httpServletRequest) {
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     String userId = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
@@ -262,11 +262,11 @@ public class OrderServiceImpl implements OrderService {
     if (userOpt.isEmpty()) {
       throw new Exception("User not found: " + userId);
     }
-    List<Session> activeSessions = sessionRepository.findActiveSessionByUser(userId);
-    if (activeSessions.size() != 1) {
+    Optional<Session> optSession = sessionRepository.findActiveSessionByUser(userId);
+    if (optSession.isEmpty()) {
       throw new Exception("Invalid database entity: Session");
     }
-    Session session = activeSessions.get(0);
+    Session session = optSession.get();
     Set<SessionProduct> spList = session.getSessionProducts();
     if (spList.isEmpty()) {
       throw new Exception("Invalid order submission: Empty cart!");

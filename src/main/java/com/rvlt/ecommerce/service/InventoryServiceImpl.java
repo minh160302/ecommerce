@@ -1,17 +1,17 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryBatchRq;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
-import com.rvlt.ecommerce.model.Inventory;
-import com.rvlt.ecommerce.model.Product;
+import com.rvlt._common.model.Inventory;
+import com.rvlt._common.model.Product;
 import com.rvlt.ecommerce.repository.InventoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
-import com.rvlt.ecommerce.utils.Utils;
+import com.rvlt.ecommerce.utils.Validator;
 import com.rvlt.ecommerce.utils.ExcelUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +36,11 @@ public class InventoryServiceImpl implements InventoryService {
   private ProductRepository productRepository;
 
   @Autowired
-  private Utils utils;
+  private Validator validator;
 
   @Override
   public ResponseMessage<List<Inventory>> getAllInventory(HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     ResponseMessage<List<Inventory>> rs = new ResponseMessage<>();
     Status status = new Status();
     List<Inventory> inventoryList = inventoryRepository.findAll();
@@ -51,7 +51,7 @@ public class InventoryServiceImpl implements InventoryService {
 
   @Override
   public ResponseMessage<Inventory> getInventoryById(Long id, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     ResponseMessage<Inventory> rs = new ResponseMessage<>();
     Status status = new Status();
     Optional<Inventory> invOpt = inventoryRepository.findById(id);
@@ -67,7 +67,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   @Transactional
   public ResponseMessage<Void> deleteInventoryById(Long id, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     if (inventoryRepository.existsById(id)) {
@@ -82,7 +82,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   @Transactional
   public ResponseMessage<Void> updateInventory(Long id, RequestMessage<UpdateInventoryRq> rq, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     UpdateInventoryRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
@@ -101,7 +101,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   @Transactional
   public ResponseMessage<Void> importSingleInventory(RequestMessage<CreateInventoryRq> rq, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     CreateInventoryRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
@@ -118,7 +118,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   @Transactional
   public ResponseMessage<Void> importBatchInventories(RequestMessage<CreateInventoryBatchRq> rq, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     CreateInventoryBatchRq request = rq.getData();
     // this is doing double count addition, somehow
 //    this.aggregateBatchCreateInventory(request);
@@ -146,7 +146,7 @@ public class InventoryServiceImpl implements InventoryService {
   @Override
   @Transactional
   public ResponseMessage<Void> importBatchThroughExcel(MultipartFile file, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
     try {

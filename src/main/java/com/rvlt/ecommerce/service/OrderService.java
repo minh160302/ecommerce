@@ -5,11 +5,10 @@ import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.order.OrderActionRq;
 import com.rvlt.ecommerce.dto.order.OrderStatusRs;
 import com.rvlt.ecommerce.dto.order.SubmitOrderRq;
-import com.rvlt.ecommerce.model.Order;
-import com.rvlt.ecommerce.model.User;
+import com.rvlt._common.model.Order;
+import com.rvlt._common.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 

@@ -1,16 +1,16 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.wishlist.HandleWishlistActionRq;
-import com.rvlt.ecommerce.model.Product;
-import com.rvlt.ecommerce.model.User;
-import com.rvlt.ecommerce.model.Wishlist;
+import com.rvlt._common.model.Product;
+import com.rvlt._common.model.User;
+import com.rvlt._common.model.Wishlist;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.WishlistRepository;
-import com.rvlt.ecommerce.utils.Utils;
+import com.rvlt.ecommerce.utils.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,12 +31,12 @@ public class WishlistServiceImpl implements WishlistService {
   private ProductRepository productRepository;
 
   @Autowired
-  private Utils utils;
+  private Validator validator;
 
   @Override
   @Transactional
   public ResponseMessage<Void> handleWishlistAction(RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
-    User user = utils.getCurrentUser(httpServletRequest);
+    User user = validator.getCurrentUser(httpServletRequest);
     HandleWishlistActionRq input = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();

@@ -3,8 +3,7 @@ package com.rvlt.ecommerce.service;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.user.UserOnboardingRq;
-import com.rvlt.ecommerce.model.User;
-import org.springframework.web.server.ResponseStatusException;
+import com.rvlt._common.model.User;
 
 import java.util.List;
 

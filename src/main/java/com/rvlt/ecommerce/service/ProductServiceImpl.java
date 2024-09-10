@@ -1,19 +1,19 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
-import com.rvlt.ecommerce.model.Category;
-import com.rvlt.ecommerce.model.Product;
-import com.rvlt.ecommerce.model.Session;
-import com.rvlt.ecommerce.model.composite.SessionProduct;
+import com.rvlt._common.model.Category;
+import com.rvlt._common.model.Product;
+import com.rvlt._common.model.Session;
+import com.rvlt._common.model.composite.SessionProduct;
 import com.rvlt.ecommerce.repository.CategoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.SessionProductRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
-import com.rvlt.ecommerce.utils.Utils;
+import com.rvlt.ecommerce.utils.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,11 +37,11 @@ public class ProductServiceImpl implements ProductService {
   @Autowired
   private ProductViewService productViewService;
   @Autowired
-  private Utils utils;
+  private Validator validator;
 
   @Override
   public ResponseMessage<List<Product>> getAllProduct(HttpServletRequest httpServletRequest) {
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<List<Product>> rs = new ResponseMessage<>();
     Status status = new Status();
     List<Product> products = productRepository.findAll();
@@ -52,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public ResponseMessage<Product> getProductById(Long id, HttpServletRequest httpServletRequest) {
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<Product> rs = new ResponseMessage<>();
     Status status = new Status();
     String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
@@ -74,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
   @Override
   @Transactional
   public ResponseMessage<Void> updateProduct(Long id, RequestMessage<UpdateProductRq> rq, HttpServletRequest httpServletRequest) {
-    utils.validateAdminHeader(httpServletRequest);
+    validator.validateAdmin(httpServletRequest);
     UpdateProductRq request = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
@@ -110,7 +110,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public ResponseMessage<List<Category>> getProductCategories(Long productId, HttpServletRequest httpServletRequest) {
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<List<Category>> rs = new ResponseMessage<>();
     Status status = new Status();
     List<Category> categories = categoryRepository.findCategoriesOfProduct(productId);
@@ -121,7 +121,7 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public ResponseMessage<List<Product>> getPersonalizedProducts(HttpServletRequest httpServletRequest) {
-    utils.validateUserHeader(httpServletRequest);
+    validator.validateUser(httpServletRequest);
     ResponseMessage<List<Product>> rs = new ResponseMessage<>();
     Status status = new Status();
     String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);

@@ -1,4 +1,4 @@
-package com.rvlt.ecommerce.config;
+package com.rvlt._common.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -9,8 +9,10 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 @Configuration
+@Order(1)
 public class RabbitMQConfig {
   @Value("${spring.rabbitmq.template.exchange}")
   private String exchangeName;
@@ -30,8 +32,8 @@ public class RabbitMQConfig {
   @Value("${spring.rabbitmq.password}")
   private String password;
 
-  @Value("${spring.rabbitmq.virtual-host}")
-  private String virtualHost;
+//  @Value("${spring.rabbitmq.virtual-host}")
+//  private String virtualHost;
 
   @Bean
   public Queue orderQueue() {
@@ -56,7 +58,7 @@ public class RabbitMQConfig {
     CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory(host);
     cachingConnectionFactory.setUsername(username);
     cachingConnectionFactory.setPassword(password);
-    cachingConnectionFactory.setVirtualHost(virtualHost);
+//    cachingConnectionFactory.setVirtualHost(virtualHost);
     return cachingConnectionFactory;
   }
 

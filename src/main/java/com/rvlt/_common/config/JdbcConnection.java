@@ -1,6 +1,7 @@
-package com.rvlt.ecommerce.config;
+package com.rvlt._common.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
@@ -8,6 +9,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 @Component
+@Order(1)
 public class JdbcConnection {
   @Value("spring.datasource.driver-class-name")
   private String DB_DRIVER_CLASS;

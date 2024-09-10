@@ -1,7 +1,7 @@
 package com.rvlt.ecommerce.repository;
 
-import com.rvlt.ecommerce.model.composite.SessionProduct;
-import com.rvlt.ecommerce.model.composite.SessionProductKey;
+import com.rvlt._common.model.composite.SessionProduct;
+import com.rvlt._common.model.composite.SessionProductKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

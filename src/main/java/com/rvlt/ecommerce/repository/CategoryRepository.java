@@ -1,6 +1,6 @@
 package com.rvlt.ecommerce.repository;
 
-import com.rvlt.ecommerce.model.Category;
+import com.rvlt._common.model.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

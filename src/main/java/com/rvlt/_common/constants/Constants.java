@@ -1,4 +1,4 @@
-package com.rvlt.ecommerce.constants;
+package com.rvlt._common.constants;
 
 public class Constants {
   public static final class SERVER_STATUS_CODE {
@@ -33,6 +33,7 @@ public class Constants {
   public static final class CART_ACTIONS {
     public static final String ADD = "ADD";
     public static final String UPDATE = "UPDATE";
+    public static final String DELETE = "DELETE";
   }
 
   public static final class WISHLIST_ACTIONS {

@@ -1,12 +1,10 @@
-package com.rvlt.ecommerce.filter;
+package com.rvlt._common.filter;
 
-import com.rvlt.ecommerce.constants.Constants;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 

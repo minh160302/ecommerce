@@ -1,6 +1,6 @@
 package com.rvlt.ecommerce.utils;
 
-import com.rvlt.ecommerce.model.Inventory;
+import com.rvlt._common.model.Inventory;
 import com.rvlt.ecommerce.repository.InventoryRepository;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;

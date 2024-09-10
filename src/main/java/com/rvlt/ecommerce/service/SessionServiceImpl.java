@@ -1,21 +1,24 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.session.DeleteFromCartBatchRq;
 import com.rvlt.ecommerce.dto.session.DeleteFromCartRq;
 import com.rvlt.ecommerce.dto.session.HandleCartActionRq;
-import com.rvlt.ecommerce.model.Inventory;
-import com.rvlt.ecommerce.model.Product;
-import com.rvlt.ecommerce.model.Session;
-import com.rvlt.ecommerce.model.composite.SessionProduct;
-import com.rvlt.ecommerce.model.composite.SessionProductKey;
+import com.rvlt._common.model.Inventory;
+import com.rvlt._common.model.Product;
+import com.rvlt._common.model.Session;
+import com.rvlt._common.model.User;
+import com.rvlt._common.model.composite.SessionProduct;
+import com.rvlt._common.model.composite.SessionProductKey;
 import com.rvlt.ecommerce.repository.InventoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.SessionProductRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
+import com.rvlt.ecommerce.utils.Validator;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,9 +42,12 @@ public class SessionServiceImpl implements SessionService {
   @Autowired
   private SessionProductRepository spRepository;
 
+  @Autowired
+  private Validator validator;
+
   @Override
   @Transactional
-  public ResponseMessage<Void> deleteFromCart(RequestMessage<DeleteFromCartRq> request) {
+  public ResponseMessage<Void> deleteFromCart(RequestMessage<DeleteFromCartRq> request, HttpServletRequest httpServletRequest) {
     DeleteFromCartRq input = request.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
@@ -75,7 +81,7 @@ public class SessionServiceImpl implements SessionService {
 
   @Override
   @Transactional
-  public ResponseMessage<Void> deleteFromCartBatch(RequestMessage<DeleteFromCartBatchRq> request) {
+  public ResponseMessage<Void> deleteFromCartBatch(RequestMessage<DeleteFromCartBatchRq> request, HttpServletRequest httpServletRequest) {
     DeleteFromCartBatchRq input = request.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
@@ -108,8 +114,9 @@ public class SessionServiceImpl implements SessionService {
   }
 
   @Override
-  @Transactional
-  public ResponseMessage<Void> handleCartAction(RequestMessage<HandleCartActionRq> request) throws Exception {
+  @Transactional()
+  public ResponseMessage<Void> handleCartAction(RequestMessage<HandleCartActionRq> request, HttpServletRequest httpServletRequest) throws Exception {
+    User currentUser = validator.getCurrentUser(httpServletRequest);
     HandleCartActionRq input = request.getData();
     String action = input.getAction();
     ResponseMessage<Void> rs = new ResponseMessage<>();
@@ -118,19 +125,16 @@ public class SessionServiceImpl implements SessionService {
     // get product
     Product product;
     Optional<Product> pd = productRepository.findById(Long.valueOf(input.getProductId()));
-    Inventory inventory;
-    Optional<Inventory> inv = inventoryRepository.findById(Long.valueOf(input.getProductId()));
-    if (pd.isEmpty() || inv.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product/Inventory not found");
+    if (pd.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
     }
     product = pd.get();
-    inventory = inv.get();
+    Inventory inventory = product.getInventory();
     // get session
-    Session session;
-    Optional<Session> ss = sessionRepository.findById(Long.valueOf(input.getSessionId()));
+    Optional<Session> ss = currentUser.getSessions().stream().filter(session -> session.getStatus().equals(Constants.SESSION_STATUS.ACTIVE)).findFirst();
     if (ss.isEmpty())
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
-    session = ss.get();
+    Session session = ss.get();
     if (session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE))
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session inactive");
     // session-product

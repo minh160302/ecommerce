@@ -1,59 +1,59 @@
 version: '3.5'
 
 services:
-#  postgres:
-#    container_name: rvlt_postgres_container
-#    image: postgres
-#    environment:
-#      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345678}
-#      POSTGRES_DB: ${POSTGRES_DB:-postgres}
-#      PGDATA: /data/postgres
-##    volumes:
-##      - postgres:/data/postgres
-#    ports:
-#      - "5432:5432"
-#    restart: unless-stopped
-
-#  rabbitmq:
-#    image: rabbitmq:management-alpine
-#    container_name: "rabbitmq"
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
-##    volumes:
-##      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-##      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-#    environment:
-#      - RABBITMQ_ERLANG_COOKIE=cluster_cookie
-#      - RABBITMQ_DEFAULT_USER=admin
-#      - RABBITMQ_DEFAULT_PASS=admin
-#    restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus:v2.37.9
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yaml'
-    volumes:
-      - ./src/main/resources/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
-      - ./data:/prometheus
-#    depends_on:
-#      - spring-app
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana-oss:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
+  postgres:
+    container_name: rvlt_postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-12345678}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      PGDATA: /data/postgres
 #    volumes:
-#      - grafana-data:/var/lib/grafana
-#    depends_on:
-#      - spring-app
+#      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
     restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: "rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+#    volumes:
+#      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+#      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=cluster_cookie
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    restart: unless-stopped
+
+#  prometheus:
+#    image: prom/prometheus:v2.37.9
+#    container_name: prometheus
+#    ports:
+#      - "9090:9090"
+#    command:
+#      - '--config.file=/etc/prometheus/prometheus.yaml'
+#    volumes:
+#      - ./src/main/resources/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+#      - ./data:/prometheus
+##    depends_on:
+##      - spring-app
+#    restart: unless-stopped
+#
+#  grafana:
+#    image: grafana/grafana-oss:latest
+#    container_name: grafana
+#    ports:
+#      - "3100:3100"
+##    volumes:
+##      - grafana-data:/var/lib/grafana
+##    depends_on:
+##      - spring-app
+#    restart: unless-stopped
 
 #  spring-app:
 #    build:
@@ -84,8 +84,8 @@ services:
 #  spring-app:
 #    driver: bridge
 
-volumes:
-  prometheus-data:
-    driver: local
-  grafana-data:
-    driver: local
+#volumes:
+#  prometheus-data:
+#    driver: local
+#  grafana-data:
+#    driver: local

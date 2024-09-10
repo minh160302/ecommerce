@@ -1,8 +1,8 @@
-package com.rvlt.ecommerce.model;
+package com.rvlt._common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.rvlt.ecommerce.model.composite.ProductCategory;
-import com.rvlt.ecommerce.model.composite.SessionProduct;
+import com.rvlt._common.model.composite.ProductCategory;
+import com.rvlt._common.model.composite.SessionProduct;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

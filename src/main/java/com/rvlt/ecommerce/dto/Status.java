@@ -1,6 +1,6 @@
 package com.rvlt.ecommerce.dto;
 
-import com.rvlt.ecommerce.constants.Constants;
+import com.rvlt._common.constants.Constants;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;

@@ -1,12 +1,13 @@
-package com.rvlt.ecommerce.model;
+package com.rvlt._common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.rvlt.ecommerce.model.composite.ProductCategory;
+import com.rvlt._common.model.composite.ProductCategory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.core.annotation.Order;
 
 import java.util.Set;
 

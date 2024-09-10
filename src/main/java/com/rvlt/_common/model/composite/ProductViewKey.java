@@ -1,8 +1,7 @@
-package com.rvlt.ecommerce.model.composite;
+package com.rvlt._common.model.composite;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

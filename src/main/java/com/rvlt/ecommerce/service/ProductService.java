@@ -3,10 +3,9 @@ package com.rvlt.ecommerce.service;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
-import com.rvlt.ecommerce.model.Category;
-import com.rvlt.ecommerce.model.Product;
+import com.rvlt._common.model.Category;
+import com.rvlt._common.model.Product;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 

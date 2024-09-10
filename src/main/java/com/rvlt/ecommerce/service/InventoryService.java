@@ -5,7 +5,7 @@ import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryBatchRq;
 import com.rvlt.ecommerce.dto.inventory.CreateInventoryRq;
 import com.rvlt.ecommerce.dto.inventory.UpdateInventoryRq;
-import com.rvlt.ecommerce.model.Inventory;
+import com.rvlt._common.model.Inventory;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 

@@ -1,12 +1,15 @@
-package com.rvlt.ecommerce.model;
+package com.rvlt._common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rvlt._common.model.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.util.Date;
 import java.util.Set;
@@ -42,6 +45,11 @@ public class User {
   @Column(name = "created_at")
   @Temporal(TemporalType.TIMESTAMP)
   private Date createdAt;
+
+  @Column(name = "role")
+  @Enumerated(EnumType.STRING)
+  @JdbcType(PostgreSQLEnumJdbcType.class)
+  private Role role;
 
   @JsonIgnore
   @OneToMany(mappedBy="user", fetch = FetchType.LAZY)

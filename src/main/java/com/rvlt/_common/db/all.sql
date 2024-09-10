@@ -1,6 +1,7 @@
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 
+CREATE TYPE rvlt_role AS ENUM ('rvlt_admin', 'rvlt_mod', 'user');
 
 CREATE TABLE if not exists users
 (
@@ -9,7 +10,8 @@ CREATE TABLE if not exists users
     lastName   VARCHAR(255) NOT NULL,
     email      VARCHAR(255) NOT NULL UNIQUE,
     dob        VARCHAR(255),
-    created_at TIMESTAMP
+    created_at TIMESTAMP,
+    role       rvlt_role default 'user'
 );
 
 -- total = instock + processing + delivered
@@ -153,6 +155,8 @@ CREATE TABLE if not exists product_view
 
 
 -- users
+INSERT INTO users(firstname, lastname, dob, email, created_at, role)
+VALUES ('admin', 'admin', '01/01/1999', 'admin@rvlt.com', current_timestamp, 'rvlt_admin');
 INSERT INTO users(firstname, lastname, dob, email, created_at)
 VALUES ('John1', 'Doe1', '01/01/2000', 'j1@gmail.com', current_timestamp);
 INSERT INTO users(firstname, lastname, dob, email, created_at)
