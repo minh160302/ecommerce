@@ -24,11 +24,12 @@ public class Wishlist {
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
-  @ManyToMany(cascade = CascadeType.ALL)
+  @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
   @JoinTable(
           name = "wishlist_product",
           joinColumns = @JoinColumn(name = "wishlist_id"),
           inverseJoinColumns = @JoinColumn(name = "product_id")
   )
+  @JsonIgnore
   private Set<Product> products;
 }
