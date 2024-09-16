@@ -8,6 +8,7 @@ import com.rvlt._common.model.Product;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ProductService {
   ResponseMessage<List<Product>> getAllProduct(HttpServletRequest httpServletRequest);
@@ -19,4 +20,6 @@ public interface ProductService {
   ResponseMessage<List<Category>> getProductCategories(Long productId, HttpServletRequest httpServletRequest);
 
   ResponseMessage<List<Product>> getPersonalizedProducts(HttpServletRequest httpServletRequest);
+
+  ResponseMessage<Set<Product>> getProductsInWishlist(HttpServletRequest httpServletRequest);
 }

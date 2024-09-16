@@ -22,7 +22,7 @@ public class WishlistController {
 
   @Operation(summary = "[Client] Add a product to wish list")
   @Parameter(in = ParameterIn.HEADER, name = Constants.RVLT.userIdHeader, required = true, description = "User ID")
-  @PostMapping
+  @PostMapping("/add")
   public ResponseEntity<ResponseMessage<Void>> addProductToWishlist(@RequestBody RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
     rq.getData().setAction(Constants.WISHLIST_ACTIONS.ADD);
     ResponseMessage<Void> res = wishlistService.handleWishlistAction(rq, httpServletRequest);
@@ -31,7 +31,7 @@ public class WishlistController {
 
   @Operation(summary = "[Client] Remove a product from wish list")
   @Parameter(in = ParameterIn.HEADER, name = Constants.RVLT.userIdHeader, required = true, description = "User ID")
-  @DeleteMapping
+  @PostMapping("/remove")
   public ResponseEntity<ResponseMessage<Void>> removeProductFromWishlist(@RequestBody RequestMessage<HandleWishlistActionRq> rq, HttpServletRequest httpServletRequest) {
     rq.getData().setAction(Constants.WISHLIST_ACTIONS.REMOVE);
     ResponseMessage<Void> res = wishlistService.handleWishlistAction(rq, httpServletRequest);

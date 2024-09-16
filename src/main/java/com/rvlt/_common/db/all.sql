@@ -1,8 +1,18 @@
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 
+-- ENUMS
 CREATE TYPE rvlt_role AS ENUM ('rvlt_admin', 'rvlt_mod', 'user');
 
+CREATE TYPE blog_status AS ENUM (
+    'UNPUBLISHED', 'WAITING_MOD_APPROVAL'
+    , 'MOD_APPROVED', 'MOD_SEND_BACK', 'MOD_REJECTED'
+    , 'ADMIN_PUBLISHED', 'ADMIN_REJECTED'
+    , 'PUBLIC'
+    );
+
+
+-- SCHEMAS
 CREATE TABLE if not exists users
 (
     id         BIGSERIAL PRIMARY KEY,
@@ -141,18 +151,39 @@ CREATE TABLE if not exists wishlist_product
 
 CREATE TABLE if not exists product_view
 (
-    user_id     BIGINT NOT NULL,
-    product_id  BIGINT NOT NULL,
+    user_id    BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
     PRIMARY KEY (user_id, product_id),
-    count       BIGINT NOT NULL,
-    history     VARCHAR(255),
+    count      BIGINT NOT NULL,
+    history    VARCHAR(255),
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
 -- format: timestamp@count | timestamp@count |  ...
 );
 
--- INDEXING
+-- ------------------------- BLOGS -------------------------
+CREATE TABLE if not exists blogs
+(
+    id                BIGSERIAL PRIMARY KEY,
+    user_id           BIGINT        NOT NULL references users (id), -- NO cascade (aggregation), orphan
+    title             VARCHAR(255)  NOT NULL,
+    slug              VARCHAR(255) UNIQUE NOT NULL,
+    published_content VARCHAR(1000),                       -- later refactor to saving in file storage
+    draft_content     VARCHAR(1000),                       -- later refactor to saving in file storage
+    created_at        TIMESTAMP,
+    updated_at        TIMESTAMP,
+    status            blog_status default 'UNPUBLISHED',
+    view_count        BIGINT default 0
+);
 
+CREATE TABLE if not exists blog_registry_actions
+(
+    id          BIGSERIAL PRIMARY KEY,
+    action      VARCHAR(10) NOT NULL,
+    prev_status blog_status,
+    cur_status  blog_status,
+    user_id     BIGINT      NOT NULL references users (id)
+);
 
 -- users
 INSERT INTO users(firstname, lastname, dob, email, created_at, role)

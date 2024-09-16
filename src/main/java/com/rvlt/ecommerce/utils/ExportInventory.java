@@ -24,9 +24,9 @@ import java.util.Date;
 import java.util.List;
 
 @Configuration
-@ComponentScan(basePackages = "com.rvlt.ecommerce")
-@EnableJpaRepositories(basePackages = "com.rvlt.ecommerce.repository")
-@EntityScan(basePackages = "com.rvlt.ecommerce.model")
+//@ComponentScan(basePackages = "com.rvlt.ecommerce")
+//@EnableJpaRepositories(basePackages = "com.rvlt.ecommerce.repository")
+//@EntityScan(basePackages = "com.rvlt.ecommerce.model")
 @PropertySource("classpath:application.properties")
 @EnableAutoConfiguration
 public class ExportInventory {

@@ -19,9 +19,13 @@ public class Validator {
 
   public void validateAdmin(HttpServletRequest request) {
     User user = this.getCurrentUser(request);
-    if (user == null || user.getRole() != Role.rvlt_admin) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized request");
+    if (user != null) {
+      Role role = user.getRole();
+      if (role == Role.rvlt_admin || role == Role.rvlt_mod) {
+        return;
+      }
     }
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized request");
   }
 
   public void validateUser(HttpServletRequest request) {

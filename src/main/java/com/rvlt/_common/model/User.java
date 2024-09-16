@@ -59,4 +59,25 @@ public class User {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Wishlist wishlist;
 
+  @JsonIgnore
+  @OrderBy("id ASC")
+  @OneToMany(mappedBy="user", fetch = FetchType.LAZY)
+  private Set<Blog> blogs;
+
+  public boolean checkBlogOwnership(Long blogId) {
+    Blog[] blogs = this.getBlogs().toArray(new Blog[0]);
+    int left = 0, right = blogs.length - 1;
+    while (left <= right) {
+      int mid = (left + right) >>> 1;
+      if (blogs[mid].getId().equals(blogId)) {
+        return true;
+      } else if (blogs[mid].getId() > blogId) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
+    }
+    blogs = null;
+    return false;
+  }
 }

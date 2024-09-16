@@ -1,14 +1,13 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt._common.constants.Constants;
+import com.rvlt._common.model.*;
+import com.rvlt._common.model.composite.SessionProduct;
+import com.rvlt._common.model.enums.Role;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.product.UpdateProductRq;
-import com.rvlt._common.model.Category;
-import com.rvlt._common.model.Product;
-import com.rvlt._common.model.Session;
-import com.rvlt._common.model.composite.SessionProduct;
 import com.rvlt.ecommerce.repository.CategoryRepository;
 import com.rvlt.ecommerce.repository.ProductRepository;
 import com.rvlt.ecommerce.repository.SessionProductRepository;
@@ -21,8 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -121,19 +119,30 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public ResponseMessage<List<Product>> getPersonalizedProducts(HttpServletRequest httpServletRequest) {
-    validator.validateUser(httpServletRequest);
+    User user = validator.getCurrentUser(httpServletRequest);
     ResponseMessage<List<Product>> rs = new ResponseMessage<>();
-    Status status = new Status();
-    String userIdHeader = httpServletRequest.getHeader(Constants.RVLT.userIdHeader);
-    if (userIdHeader.equals(Constants.RVLT.adminHeader)) {
+    if (user.getRole().equals(Role.rvlt_admin)) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No personalized data on this resource for admin");
-    }
-    else {
-      Long userId = Long.parseLong(userIdHeader);
+    } else {
+      Long userId = user.getId();
       List<Product> products = productRepository.findMostViewedProducts(userId);
       rs.setData(products);
     }
-    rs.setStatus(status);
+    rs.setStatus(new Status());
+    return rs;
+  }
+
+  @Override
+  public ResponseMessage<Set<Product>> getProductsInWishlist(HttpServletRequest httpServletRequest) {
+    User user = validator.getCurrentUser(httpServletRequest);
+    ResponseMessage<Set<Product>> rs = new ResponseMessage<>();
+    Wishlist wishlist = user.getWishlist();
+    if (wishlist == null) {
+      rs.setData(new HashSet<>());
+    } else {
+      rs.setData(wishlist.getProducts());
+    }
+    rs.setStatus(new Status());
     return rs;
   }
 }

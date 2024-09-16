@@ -39,6 +39,7 @@ public class Constants {
   public static final class WISHLIST_ACTIONS {
     public static final String ADD = "ADD";
     public static final String REMOVE = "REMOVE";
+    public static final String CHECK = "CHECK";
   }
 
   public static final class RVLT {

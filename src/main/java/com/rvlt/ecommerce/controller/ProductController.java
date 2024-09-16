@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
@@ -71,5 +72,14 @@ public class ProductController {
     public ResponseEntity<ResponseMessage<List<Product>>> getPersonalizedProducts(HttpServletRequest httpServletRequest){
       ResponseMessage<List<Product>> res = productService.getPersonalizedProducts(httpServletRequest);
       return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
+    }
+
+    /** Get products in a user's wishlist **/
+    @Operation(summary = "[Client] Get products in user's wishlist")
+    @Parameter(in = ParameterIn.HEADER, name = Constants.RVLT.userIdHeader, required = true, description = "User ID")
+    @GetMapping("/wishlist/view")
+    public ResponseEntity<ResponseMessage<Set<Product>>> getProductsInWishlist(HttpServletRequest httpServletRequest) {
+        ResponseMessage<Set<Product>> res = productService.getProductsInWishlist(httpServletRequest);
+        return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
     }
 }
