@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.rvlt.ecommerce.EcommerceApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 21.52 s -- in com.rvlt.ecommerce.EcommerceApplicationTests
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 25.30 s -- in com.rvlt.ecommerce.EcommerceApplicationTests

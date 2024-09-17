@@ -28,7 +28,8 @@ public class EcommerceApplication {
       // CORS
       @Override
       public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("http://localhost:3000", "https://blueprint-ecommerce.vercel.app/");
+        registry.addMapping("/**").allowedOrigins("http://localhost:3000", "https://blueprint-ecommerce.vercel.app/",
+                "https://blueprint-ecommerce-git-test-sept15-tuanminh160302s-projects.vercel.app/");
       }
 
       // Path prefix
