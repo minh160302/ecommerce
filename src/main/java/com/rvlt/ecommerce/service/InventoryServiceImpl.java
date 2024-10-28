@@ -90,6 +90,9 @@ public class InventoryServiceImpl implements InventoryService {
     if (invOpt.isPresent()) {
       Inventory inventory = invOpt.get();
       inventory.setName(request.getName().trim());
+
+      // update product
+      inventory.getProduct().setName(inventory.getName());
       inventoryRepository.save(inventory);
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Inventory not found");

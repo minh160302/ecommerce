@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.core.annotation.Order;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @Table(name = "categories")
 public class Category {
   @Id
@@ -36,4 +36,8 @@ public class Category {
   @JsonIgnore
   @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
   Set<ProductCategory> productCategories;
+
+  public Category() {
+    this.productCategories = new HashSet<>();
+  }
 }

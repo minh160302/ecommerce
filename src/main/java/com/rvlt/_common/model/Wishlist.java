@@ -32,4 +32,6 @@ public class Wishlist {
   )
   @JsonIgnore
   private Set<Product> products;
+
+
 }

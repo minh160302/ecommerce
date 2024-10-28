@@ -67,7 +67,7 @@ CREATE TABLE if not exists inventories
 CREATE TABLE if not exists products
 (
     id       BIGSERIAL PRIMARY KEY references inventories (id) ON DELETE CASCADE,
-    name     VARCHAR(255) NOT NULL UNIQUE,
+    name     VARCHAR(255) NOT NULL UNIQUE references inventories(name) on update cascade,    --- TODO: remove this field as duplicated in inventories. ALTERNATIVE: might represent color,...
     in_stock INT,
     price    NUMERIC(10, 2)
 );
