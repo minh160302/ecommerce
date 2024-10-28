@@ -183,6 +183,8 @@ public class InventoryServiceImpl implements InventoryService {
     product.setName(inventory.getName());
     product.setPrice(-1);
     product.setInStock(inventory.getInStockCount());
+
+    inventory.setProduct(product);
     product.setInventory(inventory);
 
     inventoryRepository.save(inventory);

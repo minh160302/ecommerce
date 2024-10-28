@@ -36,7 +36,7 @@ public class UserController {
     return new ResponseEntity<>(res, HttpStatus.valueOf(res.getStatus().getHttpStatusCode()));
   }
 
-  @Operation(summary = "[Admin] Onboarding new user")
+  @Operation(summary = "[Client] Onboarding new user")
   @PostMapping("/onboarding")
   public ResponseEntity<ResponseMessage<Void>> onboardUser(@RequestBody RequestMessage<UserOnboardingRq> request) {
     ResponseMessage<Void> res = userService.userOnboarding(request);

@@ -5,6 +5,7 @@ import com.rvlt._common.model.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,12 +13,12 @@ import org.hibernate.annotations.JdbcType;
 import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @Table(name = "users")
 public class User {
   @Id
@@ -63,6 +64,11 @@ public class User {
   @OrderBy("id ASC")
   @OneToMany(mappedBy="user", fetch = FetchType.LAZY)
   private Set<Blog> blogs;
+
+  public User() {
+    this.role = Role.user;
+    this.sessions = new HashSet<>();
+  }
 
   public boolean checkBlogOwnership(Long blogId) {
     Blog[] blogs = this.getBlogs().toArray(new Blog[0]);

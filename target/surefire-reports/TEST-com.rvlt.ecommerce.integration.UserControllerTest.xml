@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.rvlt.ecommerce.EcommerceApplicationTests" time="4.477" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.rvlt.ecommerce.integration.UserControllerTest" time="14.809" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -47,7 +47,7 @@
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="/var/folders/cw/6gkw3_r17kjdfs1n3_flc0700000gp/T/"/>
     <property name="catalina.home" value="/private/var/folders/cw/6gkw3_r17kjdfs1n3_flc0700000gp/T/tomcat.0.2336647666348718173"/>
-    <property name="com.zaxxer.hikari.pool_number" value="2"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
     <property name="java.version" value="17.0.2"/>
     <property name="user.dir" value="/Users/nguyencanhminh/Downloads/code/rvlt/ecommerce"/>
     <property name="os.arch" value="x86_64"/>
@@ -65,9 +65,9 @@
     <property name="java.class.version" value="61.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[ecommerce] "/>
   </properties>
-  <testcase name="contextLoads" classname="com.rvlt.ecommerce.EcommerceApplicationTests" time="0.046">
-    <system-out><![CDATA[2024-10-28T01:52:31.027-07:00  INFO 33676 --- [ecommerce] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.rvlt.ecommerce.EcommerceApplicationTests]: EcommerceApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-2024-10-28T01:52:31.065-07:00  INFO 33676 --- [ecommerce] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.rvlt.EcommerceApplication for test class com.rvlt.ecommerce.EcommerceApplicationTests
+  <testcase name="userOnBoardingIntegrationTest" classname="com.rvlt.ecommerce.integration.UserControllerTest" time="1.274">
+    <system-out><![CDATA[01:52:15.828 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.rvlt.ecommerce.integration.UserControllerTest]: UserControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+01:52:16.048 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.rvlt.EcommerceApplication for test class com.rvlt.ecommerce.integration.UserControllerTest
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -78,51 +78,57 @@
 
  :: Spring Boot ::                (v3.3.1)
 
-2024-10-28T01:52:31.159-07:00  INFO 33676 --- [ecommerce] [           main] c.r.ecommerce.EcommerceApplicationTests  : Starting EcommerceApplicationTests using Java 17.0.2 with PID 33676 (started by nguyencanhminh in /Users/nguyencanhminh/Downloads/code/rvlt/ecommerce)
-2024-10-28T01:52:31.159-07:00  INFO 33676 --- [ecommerce] [           main] c.r.ecommerce.EcommerceApplicationTests  : No active profile set, falling back to 1 default profile: "default"
-2024-10-28T01:52:31.713-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2024-10-28T01:52:31.714-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2024-10-28T01:52:31.739-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 24 ms. Found 11 JPA repository interfaces.
-2024-10-28T01:52:31.946-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2024-10-28T01:52:31.947-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
-2024-10-28T01:52:31.961-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.blog.repository.BlogRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.962-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.CategoryRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.962-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.InventoryRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.962-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.OrderRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.ProductCategoryRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.ProductRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.ProductViewRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.SessionProductRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.SessionRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.UserRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.WishlistRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
-2024-10-28T01:52:31.963-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 15 ms. Found 0 JDBC repository interfaces.
-2024-10-28T01:52:32.343-07:00  INFO 33676 --- [ecommerce] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2024-10-28T01:52:32.353-07:00  INFO 33676 --- [ecommerce] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2024-10-28T01:52:32.379-07:00  INFO 33676 --- [ecommerce] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2024-10-28T01:52:32.381-07:00  INFO 33676 --- [ecommerce] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
-2024-10-28T01:52:32.441-07:00  INFO 33676 --- [ecommerce] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@7c76d466
-2024-10-28T01:52:32.442-07:00  INFO 33676 --- [ecommerce] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
-2024-10-28T01:52:32.446-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2024-10-28T01:52:32.631-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): com.rvlt._common.model.composite.ProductViewKey
-2024-10-28T01:52:32.632-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): com.rvlt._common.model.composite.ProductViewKey
-2024-10-28T01:52:32.633-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): com.rvlt._common.model.composite.ProductCategoryKey
-2024-10-28T01:52:32.633-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): com.rvlt._common.model.composite.ProductCategoryKey
-2024-10-28T01:52:32.634-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): com.rvlt._common.model.composite.SessionProductKey
-2024-10-28T01:52:32.634-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): com.rvlt._common.model.composite.SessionProductKey
-2024-10-28T01:52:33.055-07:00  INFO 33676 --- [ecommerce] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-10-28T01:52:16.660-07:00  INFO 33676 --- [ecommerce] [           main] c.r.e.integration.UserControllerTest     : Starting UserControllerTest using Java 17.0.2 with PID 33676 (started by nguyencanhminh in /Users/nguyencanhminh/Downloads/code/rvlt/ecommerce)
+2024-10-28T01:52:16.663-07:00  INFO 33676 --- [ecommerce] [           main] c.r.e.integration.UserControllerTest     : No active profile set, falling back to 1 default profile: "default"
+2024-10-28T01:52:18.601-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-10-28T01:52:18.602-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-10-28T01:52:18.717-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 109 ms. Found 11 JPA repository interfaces.
+2024-10-28T01:52:19.401-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2024-10-28T01:52:19.402-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
+2024-10-28T01:52:19.451-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.blog.repository.BlogRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.451-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.CategoryRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.452-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.InventoryRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.452-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.OrderRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.452-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.ProductCategoryRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.452-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.ProductRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.453-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.ProductViewRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.453-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.SessionProductRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.453-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.SessionRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.453-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.UserRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.453-07:00  INFO 33676 --- [ecommerce] [           main] .RepositoryConfigurationExtensionSupport : Spring Data JDBC - Could not safely identify store assignment for repository candidate interface com.rvlt.ecommerce.repository.WishlistRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+2024-10-28T01:52:19.454-07:00  INFO 33676 --- [ecommerce] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 51 ms. Found 0 JDBC repository interfaces.
+2024-10-28T01:52:21.141-07:00  INFO 33676 --- [ecommerce] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2024-10-28T01:52:21.152-07:00  INFO 33676 --- [ecommerce] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-10-28T01:52:21.153-07:00  INFO 33676 --- [ecommerce] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.25]
+2024-10-28T01:52:21.242-07:00  INFO 33676 --- [ecommerce] [           main] o.a.c.c.C.[Tomcat].[localhost].[/v1]     : Initializing Spring embedded WebApplicationContext
+2024-10-28T01:52:21.245-07:00  INFO 33676 --- [ecommerce] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4540 ms
+2024-10-28T01:52:22.016-07:00  INFO 33676 --- [ecommerce] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-10-28T01:52:22.068-07:00  INFO 33676 --- [ecommerce] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2024-10-28T01:52:22.099-07:00  INFO 33676 --- [ecommerce] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2024-10-28T01:52:22.396-07:00  INFO 33676 --- [ecommerce] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-10-28T01:52:22.430-07:00  INFO 33676 --- [ecommerce] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-10-28T01:52:22.679-07:00  INFO 33676 --- [ecommerce] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5a07ae2f
+2024-10-28T01:52:22.681-07:00  INFO 33676 --- [ecommerce] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-10-28T01:52:22.727-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2024-10-28T01:52:23.369-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): com.rvlt._common.model.composite.ProductViewKey
+2024-10-28T01:52:23.371-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): com.rvlt._common.model.composite.ProductViewKey
+2024-10-28T01:52:23.372-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): com.rvlt._common.model.composite.ProductCategoryKey
+2024-10-28T01:52:23.372-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): com.rvlt._common.model.composite.ProductCategoryKey
+2024-10-28T01:52:23.373-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): com.rvlt._common.model.composite.SessionProductKey
+2024-10-28T01:52:23.373-07:00  WARN 33676 --- [ecommerce] [           main] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): com.rvlt._common.model.composite.SessionProductKey
+2024-10-28T01:52:24.602-07:00  INFO 33676 --- [ecommerce] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
 Hibernate: drop type if exists BlogStatus cascade
-2024-10-28T01:52:33.065-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
-2024-10-28T01:52:33.066-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
+2024-10-28T01:52:24.677-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2024-10-28T01:52:24.677-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
 Hibernate: drop type if exists OrderStatus cascade
-2024-10-28T01:52:33.067-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
-2024-10-28T01:52:33.068-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
+2024-10-28T01:52:24.679-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2024-10-28T01:52:24.680-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
 Hibernate: drop type if exists SessionStatus cascade
-2024-10-28T01:52:33.070-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
-2024-10-28T01:52:33.071-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
+2024-10-28T01:52:24.684-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2024-10-28T01:52:24.685-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
 Hibernate: drop type if exists Role cascade
-2024-10-28T01:52:33.073-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
-2024-10-28T01:52:33.073-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
+2024-10-28T01:52:24.686-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2024-10-28T01:52:24.686-07:00  WARN 33676 --- [ecommerce] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : drop cascades to 2 other objects
 Hibernate: create type BlogStatus as enum ('ADMIN_PUBLISHED','ADMIN_REJECTED','MOD_APPROVED','MOD_REJECTED','MOD_SEND_BACK','PUBLIC','UNPUBLISHED','WAITING_MOD_APPROVAL')
 Hibernate: create cast (varchar as BlogStatus) with inout as implicit
 Hibernate: create cast (BlogStatus as varchar) with inout as implicit
@@ -135,11 +141,20 @@ Hibernate: create cast (SessionStatus as varchar) with inout as implicit
 Hibernate: create type Role as enum ('rvlt_admin','rvlt_mod','user')
 Hibernate: create cast (varchar as Role) with inout as implicit
 Hibernate: create cast (Role as varchar) with inout as implicit
-2024-10-28T01:52:33.221-07:00  INFO 33676 --- [ecommerce] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2024-10-28T01:52:35.226-07:00  INFO 33676 --- [ecommerce] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 15 endpoints beneath base path '/actuator'
-2024-10-28T01:52:35.333-07:00  INFO 33676 --- [ecommerce] [           main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: localhost:5672
-2024-10-28T01:52:35.374-07:00  INFO 33676 --- [ecommerce] [           main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: connectionFactory#15516e5a:0/SimpleConnection@193c3354 [delegate=amqp://admin@127.0.0.1:5672/, localPort=50159]
-2024-10-28T01:52:35.431-07:00  INFO 33676 --- [ecommerce] [           main] c.r.ecommerce.EcommerceApplicationTests  : Started EcommerceApplicationTests in 4.349 seconds (process running for 20.872)
+2024-10-28T01:52:24.894-07:00  INFO 33676 --- [ecommerce] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-10-28T01:52:25.668-07:00  INFO 33676 --- [ecommerce] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2024-10-28T01:52:28.449-07:00  INFO 33676 --- [ecommerce] [           main] o.a.c.c.C.[Tomcat].[localhost].[/v1]     : Initializing Spring TestDispatcherServlet ''
+2024-10-28T01:52:28.452-07:00  INFO 33676 --- [ecommerce] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2024-10-28T01:52:28.468-07:00  INFO 33676 --- [ecommerce] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 15 endpoints beneath base path '/actuator'
+2024-10-28T01:52:28.520-07:00  INFO 33676 --- [ecommerce] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 68 ms
+2024-10-28T01:52:28.797-07:00  INFO 33676 --- [ecommerce] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 50146 (http) with context path '/v1'
+2024-10-28T01:52:28.822-07:00  INFO 33676 --- [ecommerce] [           main] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: localhost:5672
+2024-10-28T01:52:28.886-07:00  INFO 33676 --- [ecommerce] [           main] o.s.a.r.c.CachingConnectionFactory       : Created new connection: connectionFactory#5a07088b:0/SimpleConnection@46bcdf2e [delegate=amqp://admin@127.0.0.1:5672/, localPort=50147]
+2024-10-28T01:52:28.998-07:00  INFO 33676 --- [ecommerce] [           main] c.r.e.integration.UserControllerTest     : Started UserControllerTest in 12.763 seconds (process running for 14.439)
+2024-10-28T01:52:29.892-07:00  INFO 33676 --- [ecommerce] [           main] com.rvlt._common.filter.RequestFilter    : /ec/users/onboarding
+Hibernate: insert into users (created_at,dob,email,firstname,lastname,role) values (?,?,?,?,?,?) returning id
+Hibernate: insert into sessions (created_at,status,total_amount,updated_at,user_id) values (?,?,?,?,?) returning id
+Hibernate: select u1_0.id,u1_0.created_at,u1_0.dob,u1_0.email,u1_0.firstname,u1_0.lastname,u1_0.role from users u1_0 where u1_0.email=?
 ]]></system-out>
   </testcase>
 </testsuite>

@@ -1,5 +1,6 @@
 package com.rvlt;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -36,7 +37,7 @@ public class EcommerceApplication {
       @Override
       public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer.addPathPrefix("bl", HandlerTypePredicate.forAnnotation(RestController.class).and(HandlerTypePredicate.forBasePackage("com.rvlt.blog")));
-        configurer.addPathPrefix("ecom", HandlerTypePredicate.forAnnotation(RestController.class).and(HandlerTypePredicate.forBasePackage("com.rvlt.ecommerce")));
+        configurer.addPathPrefix("ec", HandlerTypePredicate.forAnnotation(RestController.class).and(HandlerTypePredicate.forBasePackage("com.rvlt.ecommerce")));
       }
     };
   }

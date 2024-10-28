@@ -34,7 +34,7 @@ CREATE TABLE if not exists users
     email      VARCHAR(255) NOT NULL UNIQUE,
     dob        VARCHAR(255),
     created_at TIMESTAMP,
-    role       rvlt_role default 'user'
+    role       rvlt_role NOT NULL default 'user'
 );
 
 -- total = instock + processing + delivered

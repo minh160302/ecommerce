@@ -21,8 +21,6 @@ com/rvlt/_common/model/composite/ProductViewKey.class
 com/rvlt/ecommerce/service/InventoryServiceImpl.class
 com/rvlt/_common/model/Session.class
 com/rvlt/ecommerce/service/ProductService.class
-com/rvlt/_common/constants/Constants$SESSION_STATUS.class
-com/rvlt/ecommerce/utils/ObjectMapper.class
 com/rvlt/ecommerce/dto/ResponseMessage.class
 com/rvlt/_common/config/JdbcConnection.class
 com/rvlt/ecommerce/dto/inventory/UpdateInventoryRq.class
@@ -76,7 +74,6 @@ com/rvlt/ecommerce/dto/inventory/CreateInventoryRq.class
 com/rvlt/ecommerce/repository/ProductRepository.class
 com/rvlt/ecommerce/dto/order/SubmitOrderRq.class
 com/rvlt/ecommerce/service/UserServiceImpl.class
-com/rvlt/_common/constants/Constants$ORDER_STATUS.class
 com/rvlt/_common/model/Blog.class
 com/rvlt/ecommerce/controller/OrderController.class
 com/rvlt/_common/constants/Constants$CART_ACTIONS.class

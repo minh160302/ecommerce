@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+// TODO: differentiate UNAUTHORIZED / FORBIDDEN cases
 @Component
 public class Validator {
   @Autowired

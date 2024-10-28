@@ -8,12 +8,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @Table(name = "products")
 public class Product {
   @Id
@@ -43,4 +43,9 @@ public class Product {
   @JsonIgnore
   @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
   Set<ProductCategory> productCategories;
+
+  public Product() {
+    this.sessionProducts = new HashSet<>();
+    this.productCategories = new HashSet<>();
+  }
 }

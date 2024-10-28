@@ -1,15 +1,14 @@
 package com.rvlt.ecommerce.service;
 
-import com.rvlt._common.constants.Constants;
+import com.rvlt._common.model.Order;
+import com.rvlt._common.model.Session;
+import com.rvlt._common.model.User;
 import com.rvlt._common.model.enums.OrderStatus;
 import com.rvlt._common.model.enums.SessionStatus;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
 import com.rvlt.ecommerce.dto.user.UserOnboardingRq;
-import com.rvlt._common.model.Order;
-import com.rvlt._common.model.Session;
-import com.rvlt._common.model.User;
 import com.rvlt.ecommerce.repository.OrderRepository;
 import com.rvlt.ecommerce.repository.SessionRepository;
 import com.rvlt.ecommerce.repository.UserRepository;
@@ -73,24 +72,32 @@ public class UserServiceImpl implements UserService {
     user.setFirstName(input.getFirstName());
     user.setLastName(input.getLastName());
     user.setDob(input.getDob());
-    userRepository.save(user);
 
-    // create new active session
+    // create new active session (ACTIVE)
     Session session = new Session();
-    session.setUser(user);
     session.setStatus(SessionStatus.ACTIVE);
     session.setCreatedAt(rq.getTime());
     session.setUpdatedAt(rq.getTime());
     session.setTotalAmount(0.0);
-    sessionRepository.save(session);
 
-    // create new order (NOT_SUBMITTED status)
+    // create new order (NOT_SUBMITTED)
     Order order = new Order();
     order.setCreatedAt(rq.getTime());
     order.setHistory("");
     order.setSession(session);
     order.setStatus(OrderStatus.NOT_SUBMITTED);
+
+    // relationship
+    user.getSessions().add(session);
+    session.setUser(user);
+    session.setOrder(order);
+    order.setSession(session);
+
+    // commit
+    userRepository.save(user);
+    sessionRepository.save(session);
     orderRepository.save(order);
+
     status.setHttpStatusCode(HttpStatus.CREATED.value());
     rs.setStatus(status);
     return rs;
