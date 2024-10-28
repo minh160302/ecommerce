@@ -11,6 +11,19 @@ CREATE TYPE blog_status AS ENUM (
     , 'PUBLIC'
     );
 
+CREATE TYPE order_status AS ENUM (
+    'NOT_SUBMITTED',
+    'PROCESSING_SUBMIT',
+    'DELIVERY_IN_PROGRESS',
+    'DELIVERED',
+    'DELIVERY_FAILED',
+    'PROCESSING_CANCEL'
+    );
+
+CREATE TYPE session_status AS ENUM (
+    'ACTIVE',
+    'INACTIVE'
+    );
 
 -- SCHEMAS
 CREATE TABLE if not exists users
@@ -75,7 +88,7 @@ CREATE TABLE if not exists categories
 CREATE TABLE if not exists sessions
 (
     id           BIGSERIAL PRIMARY KEY,
-    status       VARCHAR(255)   NOT NULL, -- ACTIVE/INACTIVE
+    status       session_status default 'ACTIVE',
     total_amount NUMERIC(10, 2) NOT NULL,
     created_at   TIMESTAMP      NOT NULL,
     updated_at   TIMESTAMP,
@@ -85,11 +98,12 @@ CREATE TABLE if not exists sessions
 
 CREATE TABLE if not exists orders
 (
-    id           BIGSERIAL PRIMARY KEY references sessions (id) ON DELETE CASCADE,
-    status       VARCHAR(255) NOT NULL, -- NOT SUBMITTED/PROCESSING_SUBMIT/DELIVERY_IN_PROGRESS/DELIVERED/DELIVERY_FAILED/PROCESSING_CANCEL/RETURN_IN_PROGRESS
-    created_at   TIMESTAMP    NOT NULL,
+    id           BIGSERIAL PRIMARY KEY references sessions (id) ON DELETE cascade, ---- TODO: change schema to set null
+    status       order_status default 'NOT_SUBMITTED',
+--     status       VARCHAR(255) NOT NULL, -- NOT_SUBMITTED/PROCESSING_SUBMIT/DELIVERY_IN_PROGRESS/DELIVERED/DELIVERY_FAILED/PROCESSING_CANCEL/RETURN_IN_PROGRESS
+    created_at   TIMESTAMP NOT NULL,
     submitted_at TIMESTAMP,
-    history      VARCHAR(255)           -- update history
+    history      VARCHAR(255)                                                      -- update history
 );
 
 
@@ -113,7 +127,7 @@ Relationships:
   - wishlist - products         1 to many
 
   not necessary
-  - order - product:            1 to many
+  - order - product:            many to many
 
   might come up with different design to store order tracking history
  */
@@ -165,15 +179,15 @@ CREATE TABLE if not exists product_view
 CREATE TABLE if not exists blogs
 (
     id                BIGSERIAL PRIMARY KEY,
-    user_id           BIGINT        NOT NULL references users (id), -- NO cascade (aggregation), orphan
-    title             VARCHAR(255)  NOT NULL,
+    user_id           BIGINT              NOT NULL references users (id), -- NO cascade (aggregation), orphan
+    title             VARCHAR(255)        NOT NULL,
     slug              VARCHAR(255) UNIQUE NOT NULL,
-    published_content VARCHAR(1000),                       -- later refactor to saving in file storage
-    draft_content     VARCHAR(1000),                       -- later refactor to saving in file storage
+    published_content VARCHAR(1000),                                      -- later refactor to saving in file storage
+    draft_content     VARCHAR(1000),                                      -- later refactor to saving in file storage
     created_at        TIMESTAMP,
     updated_at        TIMESTAMP,
     status            blog_status default 'UNPUBLISHED',
-    view_count        BIGINT default 0
+    view_count        BIGINT      default 0
 );
 
 CREATE TABLE if not exists blog_registry_actions
@@ -249,8 +263,8 @@ from users;
 
 
 -- orders
-insert into orders(id, status, created_at, history)
-select id, 'NOT_SUBMITTED', current_timestamp, NULL
+insert into orders(id, created_at, history)
+select id, current_timestamp, NULL
 from sessions;
 
 

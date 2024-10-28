@@ -2,6 +2,8 @@ package com.rvlt.ecommerce.service;
 
 import com.rvlt._common.constants.Constants;
 import com.rvlt._common.model.*;
+import com.rvlt._common.model.enums.OrderStatus;
+import com.rvlt._common.model.enums.SessionStatus;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
@@ -83,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
     if (orderOpt.isPresent()) {
       Order order = orderOpt.get();
       OrderStatusRs response = new OrderStatusRs();
-      response.setStatus(order.getStatus());
+      response.setStatus(order.getStatus().getValue());
       rs.setData(response);
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found/Unauthorized");
@@ -107,8 +109,8 @@ public class OrderServiceImpl implements OrderService {
     item.setType("submit_order");
     item.setData(request);
     mqProducerService.sendOrderMessage(item);
-    /**
-     * @apiNote by Minh
+    /*
+      @apiNote by Minh
      * - request to payment api here.
      * - Order is considered as PROCESSING if and only if payment succeeded
      * - idea:
@@ -139,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     }
     Session session = sessionOpt.get();
     Order order = session.getOrder();
-    if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
+    if (!session.getStatus().equals(SessionStatus.INACTIVE) || order.getStatus() != OrderStatus.PROCESSING_SUBMIT) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status for cancel action. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
     }
     // cancel order
@@ -160,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
       inventoryRepository.save(inventory);
       productRepository.save(product);
     }
-    order.setStatus(Constants.ORDER_STATUS.PROCESSING_CANCEL);
+    order.setStatus(OrderStatus.PROCESSING_CANCEL);
     orderRepository.save(order);
     // TODO: 1. more actions on order cancel
     // TODO: 2. When cancel order, inStock does not update count immediately, as items need time to return to inventory
@@ -189,7 +191,7 @@ public class OrderServiceImpl implements OrderService {
     }
     Session session = sessionOpt.get();
     Order order = session.getOrder();
-    if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.PROCESSING_SUBMIT)) {
+    if (!session.getStatus().equals(SessionStatus.INACTIVE) || !order.getStatus().equals(OrderStatus.PROCESSING_SUBMIT)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status to process. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
     }
     // process order
@@ -202,7 +204,7 @@ public class OrderServiceImpl implements OrderService {
       inventory.setDeliveryInProgressCount(inventory.getDeliveryInProgressCount() + cnt);
       inventoryRepository.save(inventory);
     }
-    order.setStatus(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS);
+    order.setStatus(OrderStatus.DELIVERY_IN_PROGRESS);
     String currentHist = order.getHistory();
     order.setHistory(currentHist + " | " + "init_delivery_at: " + now);
     orderRepository.save(order);
@@ -230,7 +232,7 @@ public class OrderServiceImpl implements OrderService {
     }
     Session session = sessionOpt.get();
     Order order = session.getOrder();
-    if (!session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE) || !order.getStatus().equals(Constants.ORDER_STATUS.DELIVERY_IN_PROGRESS)) {
+    if (!session.getStatus().equals(SessionStatus.INACTIVE) || !order.getStatus().equals(OrderStatus.DELIVERY_IN_PROGRESS)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session/order status on order receive. Session status: " + session.getStatus() + ", Order status: " + order.getStatus());
     }
     // on order receive
@@ -243,7 +245,7 @@ public class OrderServiceImpl implements OrderService {
       inventory.setDeliveredCount(inventory.getDeliveredCount() + cnt);
       inventoryRepository.save(inventory);
     }
-    order.setStatus(Constants.ORDER_STATUS.DELIVERED);
+    order.setStatus(OrderStatus.DELIVERED);
     String currentHist = order.getHistory();
     order.setHistory(currentHist + " | " + "order_received_at: " + now);
     orderRepository.save(order);
@@ -276,12 +278,12 @@ public class OrderServiceImpl implements OrderService {
       Date now = new Date();
       // order
       Order order = orderOpt.get();
-      order.setStatus(Constants.ORDER_STATUS.PROCESSING_SUBMIT);
+      order.setStatus(OrderStatus.PROCESSING_SUBMIT);
       order.setSubmitted_at(now);
       order.setHistory((order.getHistory() != null ? order.getHistory() : "") + "submitted_at: " + now);
       // session
       session.setUpdatedAt(now);
-      session.setStatus(Constants.SESSION_STATUS.INACTIVE);
+      session.setStatus(SessionStatus.INACTIVE);
       // product
       for (SessionProduct sp : spList) {
         int diff = sp.getCount();
@@ -320,17 +322,16 @@ public class OrderServiceImpl implements OrderService {
   @Override
   @Transactional
   public void afterOrderSubmitAction(User user, Date now) {
-    // ACTIVE session
+    // new ACTIVE session
     Session session = new Session();
     session.setUser(user);
-    session.setStatus(Constants.SESSION_STATUS.ACTIVE);
     session.setCreatedAt(now);
     session.setUpdatedAt(now);
     session.setTotalAmount(0.0);
     sessionRepository.save(session);
     // create new order (NOT_SUBMITTED status)
     Order order = new Order();
-    order.setStatus(Constants.ORDER_STATUS.NOT_SUBMITTED);
+    order.setStatus(OrderStatus.NOT_SUBMITTED);
     order.setCreatedAt(now);
     order.setHistory("");
     order.setSession(session);

@@ -1,6 +1,7 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt._common.constants.Constants;
+import com.rvlt._common.model.enums.SessionStatus;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
@@ -131,11 +132,11 @@ public class SessionServiceImpl implements SessionService {
     product = pd.get();
     Inventory inventory = product.getInventory();
     // get session
-    Optional<Session> ss = currentUser.getSessions().stream().filter(session -> session.getStatus().equals(Constants.SESSION_STATUS.ACTIVE)).findFirst();
+    Optional<Session> ss = currentUser.getSessions().stream().filter(session -> session.getStatus().equals(SessionStatus.ACTIVE)).findFirst();
     if (ss.isEmpty())
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
     Session session = ss.get();
-    if (session.getStatus().equals(Constants.SESSION_STATUS.INACTIVE))
+    if (session.getStatus().equals(SessionStatus.INACTIVE))
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session inactive");
     // session-product
     SessionProduct sp;

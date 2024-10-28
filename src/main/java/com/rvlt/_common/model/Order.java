@@ -1,11 +1,14 @@
 package com.rvlt._common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rvlt._common.model.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.Date;
 
@@ -20,8 +23,10 @@ public class Order {
   private Long id;
 
   @NotNull
-  @Column(name = "status")
-  private String status;
+  @Column(name = "status", columnDefinition = "status")
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  private OrderStatus status;
 
   @Column(name = "created_at")
   @Temporal(TemporalType.TIMESTAMP)

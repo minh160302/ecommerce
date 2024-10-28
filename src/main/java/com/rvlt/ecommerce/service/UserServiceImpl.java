@@ -1,6 +1,8 @@
 package com.rvlt.ecommerce.service;
 
 import com.rvlt._common.constants.Constants;
+import com.rvlt._common.model.enums.OrderStatus;
+import com.rvlt._common.model.enums.SessionStatus;
 import com.rvlt.ecommerce.dto.RequestMessage;
 import com.rvlt.ecommerce.dto.ResponseMessage;
 import com.rvlt.ecommerce.dto.Status;
@@ -63,6 +65,7 @@ public class UserServiceImpl implements UserService {
     UserOnboardingRq input = rq.getData();
     ResponseMessage<Void> rs = new ResponseMessage<>();
     Status status = new Status();
+
     // create user
     User user = new User();
     user.setEmail(input.getEmail());
@@ -75,17 +78,18 @@ public class UserServiceImpl implements UserService {
     // create new active session
     Session session = new Session();
     session.setUser(user);
-    session.setStatus(Constants.SESSION_STATUS.ACTIVE);
+    session.setStatus(SessionStatus.ACTIVE);
     session.setCreatedAt(rq.getTime());
     session.setUpdatedAt(rq.getTime());
     session.setTotalAmount(0.0);
     sessionRepository.save(session);
+
     // create new order (NOT_SUBMITTED status)
     Order order = new Order();
-    order.setStatus(Constants.ORDER_STATUS.NOT_SUBMITTED);
     order.setCreatedAt(rq.getTime());
     order.setHistory("");
     order.setSession(session);
+    order.setStatus(OrderStatus.NOT_SUBMITTED);
     orderRepository.save(order);
     status.setHttpStatusCode(HttpStatus.CREATED.value());
     rs.setStatus(status);
