@@ -105,6 +105,7 @@ public class ProductControllerTest {
   }
 
 
+
   @Test
   public void testUserViewProduct() throws Exception {
     Long inventoryId = inventory.getId();
